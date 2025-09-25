@@ -1,0 +1,267 @@
+{
+  "business": {
+    "name": "Scenic Roots Lawn Care & Landscaping",
+    "phone": "615-308-8477",
+    "email": "info@scenicroots.net",
+    "color": "#1c7c3e",
+    "logoPath": "assets/logo.png"
+  },
+  "discountPresets": [
+    {
+      "label": "None",
+      "pct": 0
+    },
+    {
+      "label": "Existing Customer \u221215%",
+      "pct": -15
+    },
+    {
+      "label": "One-Time Job +10%",
+      "pct": 10
+    },
+    {
+      "label": "Seasonal \u22125%",
+      "pct": -5
+    }
+  ],
+  "taxPresets": [
+    {
+      "label": "No tax (0%)",
+      "pct": 0
+    },
+    {
+      "label": "TN (9.75%)",
+      "pct": 9.75
+    }
+  ],
+  "depositPresets": [
+    {
+      "label": "None (0%)",
+      "pct": 0
+    },
+    {
+      "label": "30%",
+      "pct": 30
+    },
+    {
+      "label": "50%",
+      "pct": 50
+    }
+  ],
+  "scopePresets": [
+    "Routine mowing (weekly/bi-weekly) with professional striping finish",
+    "String trimming around obstacles, fence lines, and beds",
+    "Seasonal weed control applications",
+    "Fertilization programs (spring, summer, fall)",
+    "Mulch installation (hardwood, dyed, pine, etc.)",
+    "Planting (trees, shrubs, perennials, annuals)",
+    "3. Shrub, Hedge, & Tree Care",
+    "Shrub trimming and pruning",
+    "Hedge shaping and maintenance",
+    "Tree trimming (small/medium)",
+    "Storm damage clean-up",
+    "Spring clean-ups (leaf removal, debris clearing, bed prep)",
+    "Fall clean-ups (leaf collection, disposal, storm prep)",
+    "Leaf vacuuming and hauling (yard waste, trailer service)",
+    "Gutter cleaning (single-story only or partnered for higher)",
+    "Raised garden beds & planters",
+    "Custom builds (benches, planters, outdoor structures)",
+    "Common area mowing & landscaping",
+    "Seasonal flower and mulch refresh",
+    "Bush and hedge maintenance",
+    "Large property leaf removal and hauling",
+    "Property clean-outs (overgrowth clearing, fence-line reclaim)",
+    "Add-on seasonal upsells (mulch, aeration, flower rotation)",
+    "Mow, trim, blow hard surfaces",
+    "Spread mulch; edge bed borders; tidy beds",
+    "Apply weed control to beds & lawn per label",
+    "Leaf cleanup & haul off debris",
+    "Lawn leveling: deliver, spread, and grade as marked",
+    "Gutter cleaning; bag/haul debris"
+  ],
+  "termsPresets": [
+    "50% deposit to schedule; balance due upon completion. Proposal valid 15 days.",
+    "30% deposit; balance due net 7. Proposal valid 30 days."
+  ],
+  "tiers": [
+    {
+      "id": "basic",
+      "label": "Basic",
+      "items": [
+        "lawn-mowing-up-to",
+        "lawn-mowing"
+      ],
+      "note": "Entry upsell ready"
+    },
+    {
+      "id": "standard",
+      "label": "Standard",
+      "items": [
+        "lawn-mowing-up-to",
+        "lawn-mowing",
+        "grass-seeding-per"
+      ],
+      "note": "Most popular"
+    },
+    {
+      "id": "premium",
+      "label": "Premium",
+      "items": [
+        "lawn-mowing-up-to",
+        "lawn-mowing",
+        "grass-seeding-per",
+        "fertilizing-per-application",
+        "edging-trimming-only",
+        "mulch-installation-includes-barrier"
+      ],
+      "note": "Full care"
+    }
+  ],
+  "categories": [
+    {
+      "name": "Lawn Care",
+      "items": [
+        {
+          "id": "lawn-mowing-up-to",
+          "label": "Lawn Mowing (up to",
+          "unit": "ea",
+          "price": 1
+        },
+        {
+          "id": "lawn-mowing",
+          "label": "Lawn Mowing (",
+          "unit": "ea",
+          "price": 1
+        },
+        {
+          "id": "grass-seeding-per",
+          "label": "Grass Seeding (per",
+          "unit": "sf",
+          "price": 1
+        },
+        {
+          "id": "fertilizing-per-application",
+          "label": "Fertilizing (per application)",
+          "unit": "app",
+          "price": 75.0
+        }
+      ]
+    },
+    {
+      "name": "Landscape Beds",
+      "items": [
+        {
+          "id": "edging-trimming-only",
+          "label": "Edging/Trimming Only",
+          "unit": "ea",
+          "price": 25.0
+        },
+        {
+          "id": "mulch-installation-includes-barrier",
+          "label": "Mulch Installation (includes barrier)",
+          "unit": "yard",
+          "price": 110.0
+        },
+        {
+          "id": "mulch-only-delivery-spread",
+          "label": "Mulch Only (delivery & spread)",
+          "unit": "yard",
+          "price": 75.0
+        },
+        {
+          "id": "flower-bed-clean-up-prep",
+          "label": "Flower Bed Clean-Up & Prep",
+          "unit": "ea",
+          "price": 90.0
+        },
+        {
+          "id": "new-flower-bed-install",
+          "label": "New Flower Bed Install",
+          "unit": "ea",
+          "price": 500.0
+        },
+        {
+          "id": "rock-installation-decorative",
+          "label": "Rock Installation (decorative)",
+          "unit": "ton",
+          "price": 165.0
+        },
+        {
+          "id": "hedge-trimming-per",
+          "label": "Hedge Trimming (per",
+          "unit": "ea",
+          "price": 10
+        }
+      ]
+    },
+    {
+      "name": "Cleanup / Seasonal",
+      "items": [
+        {
+          "id": "spring-fall-yard-cleanup",
+          "label": "Spring/Fall Yard Cleanup",
+          "unit": "yard",
+          "price": 312.5
+        },
+        {
+          "id": "gutter-cleaning",
+          "label": "Gutter Cleaning (",
+          "unit": "ea",
+          "price": 1
+        },
+        {
+          "id": "haul-off-debris-disposal",
+          "label": "Haul-Off/Debris Disposal",
+          "unit": "ea",
+          "price": 65.0
+        }
+      ]
+    },
+    {
+      "name": "Shrubs & Trees",
+      "items": [
+        {
+          "id": "small-tree-trimming-under",
+          "label": "Small Tree Trimming (under",
+          "unit": "ea",
+          "price": 12
+        },
+        {
+          "id": "tree-brush-removal",
+          "label": "Tree/Brush Removal",
+          "unit": "ea",
+          "price": 237.5
+        }
+      ]
+    },
+    {
+      "name": "Specialty",
+      "items": [
+        {
+          "id": "pressure-washing-per-sq-ft",
+          "label": "Pressure Washing (per sq ft)",
+          "unit": "sf",
+          "price": 0
+        },
+        {
+          "id": "landscape-design-plan-basic",
+          "label": "Landscape Design Plan (Basic)",
+          "unit": "ea",
+          "price": 125.0
+        },
+        {
+          "id": "weed-barrier-replacement",
+          "label": "Weed Barrier Replacement",
+          "unit": "sf",
+          "price": 0
+        },
+        {
+          "id": "perennials",
+          "label": "perennials)",
+          "unit": "ea",
+          "price": 10.0
+        }
+      ]
+    }
+  ]
+}
