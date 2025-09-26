@@ -223,6 +223,17 @@
                         <!-- Items will be inserted here -->
                     </div>
                     <button type="button" class="secondary" id="add-item-btn">Add Service</button>
+                    <!-- Additional fields for discounts and taxes -->
+                    <label for="quote-discount">Discount (%)</label>
+                    <input type="number" id="quote-discount" min="0" max="100" step="0.01" value="0" />
+                    <label for="quote-tax">Tax (%)</label>
+                    <input type="number" id="quote-tax" min="0" max="100" step="0.01" value="0" />
+                    <!-- Additional fields for quote expiration and deposit requirements -->
+                    <label for="quote-validuntil">Valid Until</label>
+                    <input type="date" id="quote-validuntil" />
+                    <label for="quote-deposit">Deposit (%)</label>
+                    <input type="number" id="quote-deposit" min="0" max="100" step="0.01" value="0" />
+                    <!-- Display for totals with breakdown and deposit information -->
                     <div id="quote-total" style="margin-top: 1rem; font-weight: bold;">Total: $0.00</div>
                     <label for="quote-notes">Notes / Description</label>
                     <textarea id="quote-notes" rows="2"></textarea>
@@ -337,8 +348,11 @@
             <h3>Employee List</h3>
             <form id="employee-form">
                 <input type="hidden" id="employee-id" />
-                <label for="employee-name">Name</label>
-                <input type="text" id="employee-name" required />
+                <!-- Split name into first and last name for better data structure -->
+                <label for="employee-firstname">First Name</label>
+                <input type="text" id="employee-firstname" required />
+                <label for="employee-lastname">Last Name</label>
+                <input type="text" id="employee-lastname" required />
                 <label for="employee-role">Role</label>
                 <input type="text" id="employee-role" />
                 <!-- Pay rate input added to capture hourly wage for each employee -->
@@ -350,10 +364,15 @@
             <table id="employees-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
                         <th>Role</th>
                         <!-- Display the pay rate for each employee -->
                         <th>Pay Rate ($/hr)</th>
+                        <!-- Show total hours worked by the employee in the current week -->
+                        <th>Total Hours (This Week)</th>
+                        <!-- Show total pay earned by the employee in the current week -->
+                        <th>Total Pay ($) (This Week)</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -748,13 +767,27 @@
                 document.getElementById('quote-id').value = quote.id;
                 document.getElementById('quote-client').value = quote.clientId;
                 document.getElementById('quote-notes').value = quote.notes || '';
+                // Set discount, tax, valid until, and deposit values if present, otherwise default to 0 or date
+                document.getElementById('quote-discount').value = quote.discount != null ? quote.discount : 0;
+                document.getElementById('quote-tax').value = quote.tax != null ? quote.tax : 0;
+                document.getElementById('quote-validuntil').value = quote.validUntil ? quote.validUntil : '';
+                document.getElementById('quote-deposit').value = quote.deposit != null ? quote.deposit : 0;
                 quote.items.forEach(item => {
                     addItemRow(item.serviceId, item.quantity);
                 });
                 updateQuoteTotal();
             } else {
+                // reset discount, tax, deposit to zero for new quote
+                document.getElementById('quote-discount').value = 0;
+                document.getElementById('quote-tax').value = 0;
+                document.getElementById('quote-deposit').value = 0;
+                // default valid until date: 30 days from today
+                const defaultDate = new Date();
+                defaultDate.setDate(defaultDate.getDate() + 30);
+                document.getElementById('quote-validuntil').value = defaultDate.toISOString().slice(0, 10);
                 // start with one item row by default
                 addItemRow();
+                updateQuoteTotal();
             }
         }
 
@@ -812,16 +845,40 @@
         // Update quote total based on items
         function updateQuoteTotal() {
             const rows = document.querySelectorAll('#quote-items .quote-item-row');
-            let total = 0;
+            // Calculate subtotal (sum of service line items)
+            let subtotal = 0;
             rows.forEach(row => {
                 const serviceId = row.querySelector('select').value;
                 const qty = parseInt(row.querySelector('input').value) || 0;
                 const service = services.find(s => s.id == serviceId);
                 if (service && qty > 0) {
-                    total += service.price * qty;
+                    subtotal += service.price * qty;
                 }
             });
-            document.getElementById('quote-total').textContent = `Total: $${total.toFixed(2)}`;
+            // Read discount and tax percentages
+            const discountPercent = parseFloat(document.getElementById('quote-discount')?.value) || 0;
+            const taxPercent = parseFloat(document.getElementById('quote-tax')?.value) || 0;
+            // Ensure valid ranges
+            const disc = Math.max(0, Math.min(100, discountPercent));
+            const tax = Math.max(0, Math.min(100, taxPercent));
+            const discountAmount = subtotal * (disc / 100);
+            const subtotalAfterDiscount = subtotal - discountAmount;
+            const taxAmount = subtotalAfterDiscount * (tax / 100);
+            const finalTotal = subtotalAfterDiscount + taxAmount;
+            // Read deposit percentage
+            const depositPercent = parseFloat(document.getElementById('quote-deposit')?.value) || 0;
+            const dep = Math.max(0, Math.min(100, depositPercent));
+            const depositAmount = finalTotal * (dep / 100);
+            // Update the total display with breakdown including deposit and balance
+            const totalDiv = document.getElementById('quote-total');
+            if (totalDiv) {
+                totalDiv.innerHTML = `<strong>Subtotal:</strong> $${subtotal.toFixed(2)}<br>` +
+                    `<strong>Discount (${disc.toFixed(2)}%):</strong> -$${discountAmount.toFixed(2)}<br>` +
+                    `<strong>Tax (${tax.toFixed(2)}%):</strong> $${taxAmount.toFixed(2)}<br>` +
+                    `<strong>Total:</strong> $${finalTotal.toFixed(2)}<br>` +
+                    `<strong>Deposit (${dep.toFixed(2)}%):</strong> $${depositAmount.toFixed(2)}<br>` +
+                    `<strong>Balance After Deposit:</strong> $${(finalTotal - depositAmount).toFixed(2)}`;
+            }
             // Auto‑generate scope of work descriptions based on selected services
             try {
                 const notesField = document.getElementById('quote-notes');
@@ -843,6 +900,10 @@
                 console.warn('Error generating scope of work', err);
             }
         }
+        // Attach listeners to discount, tax and deposit inputs to recalculate totals dynamically
+        document.getElementById('quote-discount').addEventListener('input', updateQuoteTotal);
+        document.getElementById('quote-tax').addEventListener('input', updateQuoteTotal);
+        document.getElementById('quote-deposit').addEventListener('input', updateQuoteTotal);
 
         // Helper to read files as DataURLs
         function readFileAsDataURL(file) {
@@ -877,12 +938,22 @@
                 alert('Please add at least one service item');
                 return;
             }
-            // Calculate total
-            let total = 0;
+            // Calculate subtotal and apply discount, tax, and deposit
+            let subtotal = 0;
             items.forEach(item => {
                 const service = services.find(s => s.id == item.serviceId);
-                total += service.price * item.quantity;
+                subtotal += service.price * item.quantity;
             });
+            const discountPercent = parseFloat(document.getElementById('quote-discount').value) || 0;
+            const taxPercent = parseFloat(document.getElementById('quote-tax').value) || 0;
+            const depositPercent = parseFloat(document.getElementById('quote-deposit').value) || 0;
+            const disc = Math.max(0, Math.min(100, discountPercent));
+            const tax = Math.max(0, Math.min(100, taxPercent));
+            const dep = Math.max(0, Math.min(100, depositPercent));
+            const discountAmount = subtotal * (disc / 100);
+            const subtotalAfterDiscount = subtotal - discountAmount;
+            const taxAmount = subtotalAfterDiscount * (tax / 100);
+            const finalTotal = subtotalAfterDiscount + taxAmount;
             // Handle photos
             const photoInput = document.getElementById('quote-photos');
             const photos = [];
@@ -903,7 +974,12 @@
                     q.clientId = clientId;
                     q.items = items;
                     q.notes = notes;
-                    q.total = total;
+                    q.total = finalTotal;
+                    q.discount = disc;
+                    q.tax = tax;
+                    q.deposit = dep;
+                    // valid until may be blank if user didn't select
+                    q.validUntil = document.getElementById('quote-validuntil').value || null;
                     q.photos = photos;
                 }
             } else {
@@ -915,7 +991,11 @@
                     clientId,
                     items,
                     notes,
-                    total,
+                    total: finalTotal,
+                    discount: disc,
+                    tax: tax,
+                    deposit: dep,
+                    validUntil: document.getElementById('quote-validuntil').value || null,
                     status: 'Pending',
                     photos
                 };
@@ -981,9 +1061,51 @@
                 });
                 html += '</div>';
             }
+            // Compute subtotal, discount and tax for display
+            let subtotal = 0;
+            quote.items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                if (service) {
+                    subtotal += service.price * item.quantity;
+                }
+            });
+            const disc = quote.discount || 0;
+            const tax = quote.tax || 0;
+            const discountAmount = subtotal * (disc / 100);
+            const subtotalAfterDiscount = subtotal - discountAmount;
+            const taxAmount = subtotalAfterDiscount * (tax / 100);
+            html += `<p><strong>Subtotal:</strong> $${subtotal.toFixed(2)}</p>`;
+            // Show discount if applicable
+            if (disc) {
+                html += `<p><strong>Discount (${disc}%):</strong> -$${discountAmount.toFixed(2)}</p>`;
+            }
+            // Show tax if applicable
+            if (tax) {
+                html += `<p><strong>Tax (${tax}%):</strong> $${taxAmount.toFixed(2)}</p>`;
+            }
             html += `<p><strong>Total:</strong> $${quote.total.toFixed(2)}</p>`;
-            // Buttons: Print / Mail / Edit / Back
+            // Display quote expiration date
+            if (quote.validUntil) {
+                html += `<p><strong>Valid Until:</strong> ${new Date(quote.validUntil).toLocaleDateString()}</p>`;
+            }
+            // Display deposit information
+            if (quote.deposit && quote.deposit > 0) {
+                const depositAmount = quote.total * (quote.deposit / 100);
+                html += `<p><strong>Deposit (${quote.deposit}%):</strong> $${depositAmount.toFixed(2)}</p>`;
+                html += `<p><strong>Balance After Deposit:</strong> $${(quote.total - depositAmount).toFixed(2)}</p>`;
+            }
+            // Buttons: Accept/Decline/Convert/Print/Mail/Edit/Back
             html += '<div class="actions">';
+            // Show accept/decline options for pending quotes
+            const status = quote.status || 'Pending';
+            if (status === 'Pending') {
+                html += `<button class="primary" onclick="acceptQuote(${quote.id})">Accept Quote</button>`;
+                html += `<button class="secondary" onclick="declineQuote(${quote.id})">Decline Quote</button>`;
+            }
+            // Show convert to job for accepted quotes
+            if (status === 'Accepted') {
+                html += `<button class="primary" onclick="convertToJob(${quote.id})">Convert to Job</button>`;
+            }
             html += `<button class="primary" onclick="printQuote(${quote.id})">Print / Save</button>`;
             html += `<button class="secondary" onclick="emailQuote(${quote.id})">Email</button>`;
             html += `<button class="secondary" onclick="editQuote(${quote.id})">Edit</button>`;
@@ -1124,6 +1246,51 @@
             body += `%0D%0AThank you!`;
             const mailtoLink = `mailto:${client ? client.email : ''}?subject=${subject}&body=${body}`;
             window.location.href = mailtoLink;
+        }
+
+        // Accept quote: mark as accepted and save
+        window.acceptQuote = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            if (!quote) return;
+            if (!confirm('Mark this quote as accepted?')) return;
+            quote.status = 'Accepted';
+            saveData('quotes', quotes);
+            renderQuotes();
+            viewQuote(id);
+        }
+
+        // Decline quote: mark as declined and save
+        window.declineQuote = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            if (!quote) return;
+            if (!confirm('Mark this quote as declined?')) return;
+            quote.status = 'Declined';
+            saveData('quotes', quotes);
+            renderQuotes();
+            viewQuote(id);
+        }
+
+        // Convert accepted quote into a job
+        window.convertToJob = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            if (!quote) return;
+            if (quote.status !== 'Accepted') {
+                alert('Only accepted quotes can be converted to jobs.');
+                return;
+            }
+            if (!confirm('Convert this accepted quote into a scheduled job?')) return;
+            const clientId = quote.clientId;
+            const description = quote.notes || 'Job from accepted quote';
+            const date = new Date().toISOString().slice(0, 10);
+            jobs.push({ id: generateId(), clientId, description, date, startTime: '', endTime: '', hours: null, status: 'Scheduled', photo: null });
+            saveData('jobs', jobs);
+            // update quote status to reflect conversion
+            quote.status = 'Converted to Job';
+            saveData('quotes', quotes);
+            renderJobs();
+            renderQuotes();
+            viewQuote(id);
+            alert('Job created from quote. You can manage it in the Jobs section.');
         }
 
         // ------------------ Jobs ------------------
@@ -1346,10 +1513,49 @@
                 const tr = document.createElement('tr');
                 // format the pay rate to two decimals if it exists
                 const rate = (emp.payRate != null && !isNaN(emp.payRate)) ? parseFloat(emp.payRate).toFixed(2) : '';
+                // Determine first and last names. Support legacy 'name' property by splitting it.
+                let firstName = emp.firstName || '';
+                let lastName = emp.lastName || '';
+                if (!firstName && !lastName && emp.name) {
+                    const parts = emp.name.trim().split(' ');
+                    firstName = parts[0] || '';
+                    lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+                }
+                // calculate total hours worked by this employee during the current week
+                let totalHours = 0;
+                if (Array.isArray(timelogs) && timelogs.length > 0) {
+                    const today = new Date();
+                    // determine start of current week (Monday). 0=Sun,1=Mon,...6=Sat
+                    const dayOfWeek = today.getDay();
+                    // number of days to subtract to get Monday
+                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+                    const weekStart = new Date(today);
+                    weekStart.setDate(today.getDate() - diff);
+                    weekStart.setHours(0, 0, 0, 0);
+                    timelogs.forEach(log => {
+                        if (log.employeeId === emp.id && log.hours != null && !isNaN(log.hours)) {
+                            // compare log.date (YYYY-MM-DD) with weekStart
+                            const logDate = new Date(log.date);
+                            if (!isNaN(logDate.getTime()) && logDate >= weekStart) {
+                                totalHours += parseFloat(log.hours);
+                            }
+                        }
+                    });
+                }
+                const totalHoursDisplay = totalHours > 0 ? totalHours.toFixed(2) : '';
+                // calculate total pay for the week
+                let totalPay = '';
+                if (emp.payRate != null && !isNaN(emp.payRate) && totalHours > 0) {
+                    const pay = parseFloat(emp.payRate) * totalHours;
+                    totalPay = pay.toFixed(2);
+                }
                 tr.innerHTML = `
-                    <td>${emp.name}</td>
+                    <td>${firstName}</td>
+                    <td>${lastName}</td>
                     <td>${emp.role || ''}</td>
                     <td>${rate}</td>
+                    <td>${totalHoursDisplay}</td>
+                    <td>${totalPay}</td>
                     <td class="actions">
                         <button class="secondary" onclick="editEmployee(${emp.id})">Edit</button>
                         <button class="secondary" onclick="deleteEmployee(${emp.id})">Delete</button>
@@ -1367,7 +1573,16 @@
             employees.forEach(emp => {
                 const opt = document.createElement('option');
                 opt.value = emp.id;
-                opt.textContent = emp.name;
+                // Build display name from first and last names if present
+                let firstName = emp.firstName || '';
+                let lastName = emp.lastName || '';
+                if (!firstName && !lastName && emp.name) {
+                    const parts = emp.name.trim().split(' ');
+                    firstName = parts[0] || '';
+                    lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+                }
+                const fullName = `${firstName} ${lastName}`.trim();
+                opt.textContent = fullName;
                 select.appendChild(opt);
             });
         }
@@ -1376,24 +1591,41 @@
         document.getElementById('employee-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const idField = document.getElementById('employee-id');
-            const name = document.getElementById('employee-name').value.trim();
+            const firstName = document.getElementById('employee-firstname').value.trim();
+            const lastName = document.getElementById('employee-lastname').value.trim();
             const role = document.getElementById('employee-role').value.trim();
             // retrieve pay rate input and convert to number. Empty string yields NaN.
             let payRateVal = document.getElementById('employee-payrate').value;
             payRateVal = payRateVal === '' ? null : parseFloat(payRateVal);
-            if (!name) return;
+            if (!firstName || !lastName) return;
             if (idField.value) {
                 const emp = employees.find(emp => emp.id == idField.value);
                 if (emp) {
-                    emp.name = name;
+                    emp.firstName = firstName;
+                    emp.lastName = lastName;
+                    // maintain a combined name property for backwards compatibility
+                    emp.name = `${firstName} ${lastName}`.trim();
                     emp.role = role;
                     emp.payRate = payRateVal;
                 }
             } else {
-                employees.push({ id: generateId(), name, role, payRate: payRateVal });
+                employees.push({
+                    id: generateId(),
+                    firstName,
+                    lastName,
+                    // maintain a combined name property for backwards compatibility
+                    name: `${firstName} ${lastName}`.trim(),
+                    role,
+                    payRate: payRateVal
+                });
             }
             saveData('employees', employees);
+            // re-render lists after employee changes
             renderEmployees();
+            // update time logs display names when employee data changes
+            if (typeof renderTimeLogs === 'function') {
+                renderTimeLogs();
+            }
             this.reset();
             idField.value = '';
             document.getElementById('cancel-employee-btn').classList.add('hidden');
@@ -1411,7 +1643,16 @@
             const emp = employees.find(emp => emp.id == id);
             if (!emp) return;
             document.getElementById('employee-id').value = emp.id;
-            document.getElementById('employee-name').value = emp.name;
+            // Prefill first and last name fields. If first/last not stored, split the name.
+            let firstName = emp.firstName || '';
+            let lastName = emp.lastName || '';
+            if (!firstName && !lastName && emp.name) {
+                const parts = emp.name.trim().split(' ');
+                firstName = parts[0] || '';
+                lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
+            }
+            document.getElementById('employee-firstname').value = firstName;
+            document.getElementById('employee-lastname').value = lastName;
             document.getElementById('employee-role').value = emp.role || '';
             // set the pay rate input when editing
             if (emp.payRate != null && !isNaN(emp.payRate)) {
@@ -1488,8 +1729,17 @@
                     const total = parseFloat(emp.payRate) * parseFloat(log.hours);
                     pay = total.toFixed(2);
                 }
+                // build employee display name from first/last names if available
+                let empFirst = emp && emp.firstName ? emp.firstName : '';
+                let empLast = emp && emp.lastName ? emp.lastName : '';
+                if ((!empFirst && !empLast) && emp && emp.name) {
+                    const parts = emp.name.trim().split(' ');
+                    empFirst = parts[0] || '';
+                    empLast = parts.length > 1 ? parts.slice(1).join(' ') : '';
+                }
+                const displayName = (empFirst + ' ' + empLast).trim();
                 tr.innerHTML = `
-                    <td>${emp ? emp.name : ''}</td>
+                    <td>${displayName}</td>
                     <td>${log.date}</td>
                     <td>${ci ? ci.toLocaleTimeString() : ''}</td>
                     <td>${co ? co.toLocaleTimeString() : ''}</td>
@@ -1503,6 +1753,12 @@
                 tbody.appendChild(tr);
             });
             updateClockEmployeeSelect();
+
+            // re-render employees to update weekly totals after time logs change
+            // ensure the function exists before calling
+            if (typeof renderEmployees === 'function') {
+                renderEmployees();
+            }
         }
 
         window.deleteTimeLog = function(id) {
