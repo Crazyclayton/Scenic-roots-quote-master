@@ -1,96 +1,1628 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Scenic Roots Quoter</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- App stylesheet -->
-  <link rel="stylesheet" href="styles.css">
-  <!-- External libraries for export functionality -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lawn Care CRM &amp; Quoting App</title>
+    <!-- Simple styling for a clean and responsive interface -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f8f8;
+            color: #333;
+        }
+        header {
+            background-color: #2a9d8f;
+            color: #fff;
+            padding: 1rem;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: #264653;
+        }
+        nav button {
+            flex: 1;
+            padding: 0.8rem;
+            background-color: #264653;
+            border: none;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        nav button.active {
+            background-color: #2a9d8f;
+        }
+        main {
+            padding: 1rem;
+        }
+        section {
+            display: none;
+        }
+        section.active {
+            display: block;
+        }
+        form {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        label {
+            display: block;
+            margin-top: 0.5rem;
+        }
+        input[type="text"], input[type="number"], input[type="email"], textarea, select {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.25rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button.primary {
+            background-color: #2a9d8f;
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1rem;
+            margin-top: 1rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        button.secondary {
+            background-color: #e9c46a;
+            color: #333;
+            border: none;
+            padding: 0.5rem 0.8rem;
+            margin: 0.5rem 0.25rem;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: left;
+        }
+        th {
+            background-color: #e9c46a;
+        }
+        .quote-items-table th, .quote-items-table td {
+            padding: 0.3rem;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .hidden {
+            display: none;
+        }
+        @media (max-width: 600px) {
+            nav button {
+                font-size: 0.8rem;
+            }
+        }
+    </style>
 </head>
 <body>
-  <header class="app-header">
-    <img src="assets/logo.png" alt="Scenic Roots logo" class="logo">
-    <h1 class="title">Scenic Roots Quoter</h1>
-  </header>
-  <div id="controls" class="controls">
-    <button id="addLine">Add Item</button>
-    <select id="tierPreset">
-      <option value="">Tier Presets...</option>
-    </select>
-    <button id="saveLocal">Save</button>
-    <button id="loadLocal">Load</button>
-    <button id="clearLines">Clear</button>
-    <button id="viewEditor">Edit</button>
-    <button id="viewProposal">Client Proposal</button>
-    <button id="viewQuote">Quick Quote</button>
-    <button id="viewAgreement">Agreement Form</button>
-  </div>
-  <main>
-    <!-- Editor view where lines can be added and edited -->
-    <section id="editorView">
-      <table id="quoteTable">
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Service</th>
-            <th>Qty</th>
-            <th>Unit Price</th>
-            <th>Scope</th>
-            <th>Photos</th>
-            <th>Subtotal</th>
-            <th>Remove</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
-      <div id="summary">
-        <div>
-          <label for="globalScope">Global Scope:</label>
-          <select id="globalScope">
-            <option value="">-- select --</option>
-          </select>
+    <header>
+        <h1>Lawn Care CRM &amp; Quoting App</h1>
+    </header>
+        <nav>
+        <button id="nav-clients" class="active">Clients</button>
+        <button id="nav-services">Services</button>
+        <button id="nav-quotes">Quotes</button>
+        <button id="nav-jobs">Jobs</button>
+        <button id="nav-employees">Employees</button>
+        <button id="nav-reports">Reports</button>
+        <button id="nav-leads">Leads</button>
+        <!-- Added a Tasks button for follow‑up reminders -->
+        <button id="nav-tasks">Tasks</button>
+    </nav>
+    <main>
+        <!-- Clients Section -->
+        <section id="section-clients" class="active">
+            <h2>Clients</h2>
+            <form id="client-form">
+                <h3>Add / Edit Client</h3>
+                <input type="hidden" id="client-id" />
+                <label for="client-name">Name</label>
+                <input type="text" id="client-name" required />
+                <label for="client-company">Company</label>
+                <input type="text" id="client-company" />
+                <label for="client-email">Email</label>
+                <input type="email" id="client-email" />
+                <label for="client-phone">Phone</label>
+                <input type="text" id="client-phone" />
+                <label for="client-address">Address</label>
+                <textarea id="client-address" rows="2"></textarea>
+                <button type="submit" class="primary" id="save-client-btn">Save Client</button>
+                <button type="button" class="secondary hidden" id="cancel-client-btn">Cancel</button>
+            </form>
+            <table id="clients-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Company</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- clients will be populated here -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Services Section -->
+        <section id="section-services">
+            <h2>Services</h2>
+            <form id="service-form">
+                <h3>Add / Edit Service</h3>
+                <input type="hidden" id="service-id" />
+                <label for="service-name">Service Name</label>
+                <input type="text" id="service-name" required />
+                <label for="service-price">Price (per unit)</label>
+                <input type="number" id="service-price" step="0.01" min="0" required />
+                <label for="service-description">Description</label>
+                <textarea id="service-description" rows="2"></textarea>
+                <button type="submit" class="primary" id="save-service-btn">Save Service</button>
+                <button type="button" class="secondary hidden" id="cancel-service-btn">Cancel</button>
+            </form>
+            <table id="services-table">
+                <thead>
+                    <tr>
+                        <th>Service</th>
+                        <th>Price</th>
+                        <th>Description</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- services list -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Quotes Section -->
+        <section id="section-quotes">
+            <h2>Quotes</h2>
+            <button class="primary" id="new-quote-btn">Create New Quote</button>
+            <table id="quotes-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- quotes list -->
+                </tbody>
+            </table>
+            <!-- Quote modal / form (hidden until new or edit) -->
+            <div id="quote-modal" class="hidden">
+                <h3>Create Quote</h3>
+                <form id="quote-form">
+                    <label for="quote-client">Select Client</label>
+                    <select id="quote-client" required></select>
+                    <div id="quote-items">
+                        <!-- Items will be inserted here -->
+                    </div>
+                    <button type="button" class="secondary" id="add-item-btn">Add Service</button>
+                    <div id="quote-total" style="margin-top: 1rem; font-weight: bold;">Total: $0.00</div>
+                    <label for="quote-notes">Notes / Description</label>
+                    <textarea id="quote-notes" rows="2"></textarea>
+                    <!-- Allow attaching photos to the quote -->
+                    <label for="quote-photos">Attach Photos (optional)</label>
+                    <input type="file" id="quote-photos" multiple accept="image/*" />
+                    <input type="hidden" id="quote-id" />
+                    <button type="submit" class="primary">Save Quote</button>
+                    <button type="button" class="secondary" id="cancel-quote-btn">Cancel</button>
+                </form>
+            </div>
+            <!-- View quote details -->
+            <div id="quote-view" class="hidden">
+                <!-- content inserted dynamically -->
+            </div>
+
+        <!-- Signature modal for quotes -->
+        <div id="signature-modal" class="hidden" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:1000;">
+            <div style="background:#fff;padding:1rem;border-radius:4px;max-width:400px;width:90%;">
+                <h3>Signature</h3>
+                <p>Please sign below using your mouse or finger.</p>
+                <canvas id="signature-canvas" width="350" height="200" style="border:1px solid #ccc;"></canvas>
+                <div style="margin-top:0.5rem;display:flex;gap:0.5rem;">
+                    <button class="primary" id="save-signature-btn">Save Signature</button>
+                    <button class="secondary" id="clear-signature-btn">Clear</button>
+                    <button class="secondary" id="cancel-signature-btn">Cancel</button>
+                </div>
+            </div>
         </div>
-        <div>
-          <label for="termsSelect">Terms:</label>
-          <select id="termsSelect">
-            <option value="">-- select --</option>
-          </select>
-        </div>
-        <div>
-          <label for="discount">Discount/Markup:</label>
-          <select id="discount">
-            <option value="">None</option>
-          </select>
-        </div>
-        <div>
-          <label for="tax">Tax:</label>
-          <select id="tax">
-            <option value="">None</option>
-          </select>
-        </div>
-        <div>
-          <label for="deposit">Deposit:</label>
-          <select id="deposit">
-            <option value="">None</option>
-          </select>
-        </div>
-        <div id="totals"></div>
-      </div>
-    </section>
-    <!-- Output view used for proposals, quotes and agreements -->
-    <section id="outputView" style="display:none;">
-      <div id="clientOutput"></div>
-      <div class="export-buttons">
-        <button id="exportPNG">Export PNG</button>
-        <button id="exportPDF">Export PDF</button>
-      </div>
-    </section>
-  </main>
-  <!-- Application logic -->
-  <script type="module" src="brand-app.js"></script>
+        </section>
+
+        <!-- Jobs Section -->
+        <section id="section-jobs">
+            <h2>Jobs / Stops</h2>
+            <form id="job-form">
+                <h3>Log a Job</h3>
+                <label for="job-client">Client</label>
+                <select id="job-client"></select>
+                <label for="job-description">Description</label>
+                <textarea id="job-description" rows="2"></textarea>
+                <label for="job-date">Date</label>
+                <input type="date" id="job-date" />
+                <label for="job-start">Start Time</label>
+                <input type="time" id="job-start" />
+                <label for="job-end">End Time</label>
+                <input type="time" id="job-end" />
+                <label for="job-hours">Hours Worked (optional)</label>
+                <input type="number" id="job-hours" step="0.1" min="0" />
+                <label for="job-photo">Attach Photo (optional)</label>
+                <input type="file" id="job-photo" accept="image/*" />
+                <label for="job-status">Status</label>
+                <select id="job-status">
+                    <option value="Scheduled">Scheduled</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+                <button type="submit" class="primary">Save Job</button>
+            </form>
+            <table id="jobs-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Description</th>
+                        <th>Hours</th>
+                        <th>Status</th>
+                        <th>Photo</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- jobs list -->
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Reports Section -->
+        <section id="section-reports">
+            <h2>Analytics &amp; Reporting</h2>
+            <div id="report-content" style="max-width:600px;margin:0 auto;background:#fff;padding:1rem;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.1);"></div>
+        </section>
+
+        <!-- Leads Section -->
+        <section id="section-leads">
+            <h2>Leads &amp; Opportunities</h2>
+            <form id="lead-form">
+                <input type="hidden" id="lead-id" />
+                <label for="lead-name">Name</label>
+                <input type="text" id="lead-name" required />
+                <label for="lead-email">Email</label>
+                <input type="email" id="lead-email" />
+                <label for="lead-phone">Phone</label>
+                <input type="text" id="lead-phone" />
+                <label for="lead-notes">Notes</label>
+                <textarea id="lead-notes" rows="2"></textarea>
+                <label for="lead-stage">Stage</label>
+                <select id="lead-stage">
+                    <option value="New">New</option>
+                    <option value="Contacted">Contacted</option>
+                    <option value="Quoted">Quoted</option>
+                    <option value="Won">Won</option>
+                    <option value="Lost">Lost</option>
+                </select>
+                <button type="submit" class="primary">Save Lead</button>
+                <button type="button" class="secondary hidden" id="cancel-lead-btn">Cancel</button>
+            </form>
+            <table id="leads-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Stage</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Employees Section -->
+        <section id="section-employees">
+            <h2>Employees & Time Clock</h2>
+            <!-- Employee management -->
+            <h3>Employee List</h3>
+            <form id="employee-form">
+                <input type="hidden" id="employee-id" />
+                <label for="employee-name">Name</label>
+                <input type="text" id="employee-name" required />
+                <label for="employee-role">Role</label>
+                <input type="text" id="employee-role" />
+                <button type="submit" class="primary">Save Employee</button>
+                <button type="button" class="secondary hidden" id="cancel-employee-btn">Cancel</button>
+            </form>
+            <table id="employees-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+
+            <h3>Time Clock</h3>
+            <div style="max-width:600px;margin:0 auto;background:#fff;padding:1rem;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <label for="clock-employee">Employee</label>
+                <select id="clock-employee"></select>
+                <button class="primary" id="clock-in-btn" style="margin-top:0.5rem;">Clock In</button>
+                <button class="secondary" id="clock-out-btn" style="margin-top:0.5rem;">Clock Out</button>
+            </div>
+            <h3>Time Logs</h3>
+            <table id="timelogs-table">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Date</th>
+                        <th>Clock In</th>
+                        <th>Clock Out</th>
+                        <th>Hours</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- Tasks & Reminders Section -->
+        <section id="section-tasks">
+            <h2>Tasks &amp; Reminders</h2>
+            <!-- Task form for manual entry -->
+            <form id="task-form" style="max-width:600px;margin:0 auto;background:#fff;padding:1rem;border-radius:4px;box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <input type="hidden" id="task-id" />
+                <label for="task-title">Title</label>
+                <input type="text" id="task-title" required />
+                <label for="task-description">Description</label>
+                <textarea id="task-description" rows="2"></textarea>
+                <label for="task-due">Due Date</label>
+                <input type="date" id="task-due" />
+                <button type="submit" class="primary">Save Task</button>
+                <button type="button" class="secondary hidden" id="cancel-task-btn">Cancel</button>
+            </form>
+            <!-- Task list -->
+            <table id="tasks-table">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Due</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
+        <!-- Time Clock Section removed. Time clock functionality is integrated into the Employees section above. -->
+    </main>
+
+    <!-- JavaScript for app logic -->
+    <script>
+        // Utility functions for local storage operations
+        function loadData(key, defaultValue) {
+            const data = localStorage.getItem(key);
+            if (data) {
+                try {
+                    return JSON.parse(data);
+                } catch (e) {
+                    console.error('Error parsing', key, e);
+                }
+            }
+            return defaultValue;
+        }
+
+        function saveData(key, value) {
+            localStorage.setItem(key, JSON.stringify(value));
+        }
+
+        // Initialize collections
+        let clients = loadData('clients', []);
+        let services = loadData('services', []);
+        let quotes = loadData('quotes', []);
+        let jobs = loadData('jobs', []);
+        let employees = loadData('employees', []);
+        let timelogs = loadData('timelogs', []);
+        let leads = loadData('leads', []);
+        let tasks = loadData('tasks', []);
+
+        // Populate default services if none exist
+        if (services.length === 0) {
+            // Pre‑populated services derived from your pricing guides.  Prices reflect
+            // approximate averages of the ranges provided in your documents.  Feel free
+            // to modify or remove these items.  Units for per‑area/quantity items (e.g., per sq ft)
+            // can be represented by setting quantity accordingly when quoting.
+            services = [
+                { id: Date.now() + 1, name: 'Lawn Mowing (up to 1/4 acre)', price: 45.00, description: 'Mow and trim lawn areas up to a quarter acre, including cleanup of clippings.' },
+                { id: Date.now() + 2, name: 'Lawn Mowing (1/4 - 1/2 acre)', price: 62.50, description: 'Mow and trim lawn areas between one‑quarter and one‑half acre, including cleanup.' },
+                { id: Date.now() + 3, name: 'Lawn Mowing (1/2 - 1 acre)', price: 85.00, description: 'Mow and trim large lawns up to one acre with debris collection and cleanup.' },
+                { id: Date.now() + 4, name: 'Edging/Trimming Only', price: 25.00, description: 'Edge along sidewalks, driveways and planting beds for a crisp, finished look.' },
+                { id: Date.now() + 5, name: 'Grass Seeding (per 1,000 sq ft)', price: 92.50, description: 'Prep soil and apply premium grass seed per 1,000 square feet to promote thick, healthy turf.' },
+                { id: Date.now() + 6, name: 'Fertilizing (per application)', price: 75.00, description: 'Apply seasonally appropriate fertilizer to lawn and ornamental plants to encourage growth.' },
+                { id: Date.now() + 7, name: 'Mulch Installation (per yard)', price: 110.00, description: 'Deliver and install shredded hardwood mulch in landscape beds, per cubic yard.' },
+                { id: Date.now() + 8, name: 'Mulch Only (delivery & spread per yard)', price: 75.00, description: 'Deliver and spread mulch provided by client or purchased separately, per cubic yard.' },
+                { id: Date.now() + 9, name: 'Bed Clean-Up & Prep', price: 90.00, description: 'Remove weeds and debris, cultivate soil, and prep planting beds for new plantings or mulch.' },
+                { id: Date.now() + 10, name: 'Flower Bed Installation (new)', price: 500.00, description: 'Design and install a new flower bed including soil prep, planting and edging.' },
+                { id: Date.now() + 11, name: 'Rock Installation (per ton)', price: 165.00, description: 'Deliver and install decorative rock or gravel in beds or pathways, per ton.' },
+                { id: Date.now() + 12, name: 'Hedge Trimming (per 10 ft)', price: 60.00, description: 'Trim hedges and shrubs neatly along a 10‑foot section, removing cuttings.' },
+                { id: Date.now() + 13, name: 'Small Tree Trimming (under 12 ft)', price: 132.50, description: 'Prune small trees under 12 feet tall to remove dead or crossing branches.' },
+                { id: Date.now() + 14, name: 'Tree/Brush Removal', price: 237.50, description: 'Remove and dispose of unwanted trees, shrubs or brush from the property.' },
+                { id: Date.now() + 15, name: 'Spring/Fall Yard Cleanup', price: 312.50, description: 'Complete cleanup including leaf removal, bed clean‑out, pruning and haul away.' },
+                { id: Date.now() + 16, name: 'Gutter Cleaning (1-story)', price: 110.00, description: 'Clean debris from gutters on a single‑story home and flush downspouts.' },
+                { id: Date.now() + 17, name: 'Pressure Washing (per sq ft)', price: 0.40, description: 'Use professional equipment to pressure wash surfaces such as decks, patios or siding, per square foot.' },
+                { id: Date.now() + 18, name: 'Landscape Design Plan (Basic)', price: 125.00, description: 'Provide a basic design layout with recommended plants and materials for your landscape project.' },
+                { id: Date.now() + 19, name: 'Weed Barrier Replacement (per sq ft)', price: 1.00, description: 'Remove and replace weed barrier fabric under mulch or rock, per square foot.' },
+                { id: Date.now() + 20, name: 'Planting (flowers/perennials per plant)', price: 10.00, description: 'Install annuals or perennials provided by client or purchased separately, priced per plant.' },
+                { id: Date.now() + 21, name: 'Haul-Off/Debris Disposal', price: 65.00, description: 'Remove and dispose of yard waste, debris, or materials from the site.' }
+            ];
+            saveData('services', services);
+        }
+
+        // Helper to generate unique IDs
+        function generateId() {
+            return Date.now() + Math.floor(Math.random() * 1000);
+        }
+
+        // Navigation logic
+        const navButtons = document.querySelectorAll('nav button');
+        const sections = document.querySelectorAll('main section');
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                navButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                sections.forEach(sec => sec.classList.remove('active'));
+                const target = btn.id.replace('nav-', 'section-');
+                document.getElementById(target).classList.add('active');
+                if (target === 'section-clients') renderClients();
+                if (target === 'section-services') renderServices();
+                if (target === 'section-quotes') renderQuotes();
+                if (target === 'section-jobs') renderJobs();
+                if (target === 'section-employees') {
+                    renderEmployees();
+                    renderTimeLogs();
+                }
+                if (target === 'section-reports') renderReports();
+                if (target === 'section-leads') renderLeads();
+                if (target === 'section-tasks') renderTasks();
+            });
+        });
+
+        // ------------------ Clients ------------------
+        function renderClients() {
+            const tbody = document.querySelector('#clients-table tbody');
+            tbody.innerHTML = '';
+            clients.forEach(client => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${client.name}</td>
+                    <td>${client.company || ''}</td>
+                    <td>${client.email || ''}</td>
+                    <td>${client.phone || ''}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="editClient(${client.id})">Edit</button>
+                        <button class="secondary" onclick="deleteClient(${client.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            // Update client selections in other forms
+            updateClientSelects();
+        }
+
+        function updateClientSelects() {
+            // Quote form client select
+            const quoteClientSelect = document.getElementById('quote-client');
+            if (quoteClientSelect) {
+                quoteClientSelect.innerHTML = '<option value="">Select client</option>';
+                clients.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    quoteClientSelect.appendChild(opt);
+                });
+            }
+            // Job form client select
+            const jobClientSelect = document.getElementById('job-client');
+            if (jobClientSelect) {
+                jobClientSelect.innerHTML = '<option value="">Select client</option>';
+                clients.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    jobClientSelect.appendChild(opt);
+                });
+            }
+        }
+
+        // Save or update client
+        document.getElementById('client-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idField = document.getElementById('client-id');
+            const name = document.getElementById('client-name').value.trim();
+            const company = document.getElementById('client-company').value.trim();
+            const email = document.getElementById('client-email').value.trim();
+            const phone = document.getElementById('client-phone').value.trim();
+            const address = document.getElementById('client-address').value.trim();
+            if (!name) return;
+            if (idField.value) {
+                // update existing client
+                const client = clients.find(c => c.id == idField.value);
+                if (client) {
+                    client.name = name;
+                    client.company = company;
+                    client.email = email;
+                    client.phone = phone;
+                    client.address = address;
+                }
+            } else {
+                // new client
+                clients.push({ id: generateId(), name, company, email, phone, address });
+            }
+            saveData('clients', clients);
+            renderClients();
+            // reset form
+            this.reset();
+            idField.value = '';
+            document.getElementById('cancel-client-btn').classList.add('hidden');
+        });
+
+        // Cancel editing client
+        document.getElementById('cancel-client-btn').addEventListener('click', function() {
+            document.getElementById('client-form').reset();
+            document.getElementById('client-id').value = '';
+            this.classList.add('hidden');
+        });
+
+        // Edit client function
+        window.editClient = function(id) {
+            const client = clients.find(c => c.id == id);
+            if (!client) return;
+            document.getElementById('client-id').value = client.id;
+            document.getElementById('client-name').value = client.name;
+            document.getElementById('client-company').value = client.company || '';
+            document.getElementById('client-email').value = client.email || '';
+            document.getElementById('client-phone').value = client.phone || '';
+            document.getElementById('client-address').value = client.address || '';
+            document.getElementById('cancel-client-btn').classList.remove('hidden');
+        }
+
+        // Delete client
+        window.deleteClient = function(id) {
+            if (!confirm('Delete this client?')) return;
+            clients = clients.filter(c => c.id != id);
+            saveData('clients', clients);
+            // also remove quotes and jobs associated with this client
+            quotes = quotes.filter(q => q.clientId != id);
+            saveData('quotes', quotes);
+            jobs = jobs.filter(j => j.clientId != id);
+            saveData('jobs', jobs);
+            renderClients();
+        }
+
+        // ------------------ Services ------------------
+        function renderServices() {
+            const tbody = document.querySelector('#services-table tbody');
+            tbody.innerHTML = '';
+            services.forEach(service => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${service.name}</td>
+                    <td>$${service.price.toFixed(2)}</td>
+                    <td>${service.description || ''}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="editService(${service.id})">Edit</button>
+                        <button class="secondary" onclick="deleteService(${service.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        document.getElementById('service-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idField = document.getElementById('service-id');
+            const name = document.getElementById('service-name').value.trim();
+            const price = parseFloat(document.getElementById('service-price').value);
+            const description = document.getElementById('service-description').value.trim();
+            if (!name || isNaN(price)) return;
+            if (idField.value) {
+                const service = services.find(s => s.id == idField.value);
+                if (service) {
+                    service.name = name;
+                    service.price = price;
+                    service.description = description;
+                }
+            } else {
+                services.push({ id: generateId(), name, price, description });
+            }
+            saveData('services', services);
+            renderServices();
+            this.reset();
+            idField.value = '';
+            document.getElementById('cancel-service-btn').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-service-btn').addEventListener('click', function() {
+            document.getElementById('service-form').reset();
+            document.getElementById('service-id').value = '';
+            this.classList.add('hidden');
+        });
+
+        window.editService = function(id) {
+            const service = services.find(s => s.id == id);
+            if (!service) return;
+            document.getElementById('service-id').value = service.id;
+            document.getElementById('service-name').value = service.name;
+            document.getElementById('service-price').value = service.price;
+            document.getElementById('service-description').value = service.description || '';
+            document.getElementById('cancel-service-btn').classList.remove('hidden');
+        }
+
+        window.deleteService = function(id) {
+            if (!confirm('Delete this service?')) return;
+            services = services.filter(s => s.id != id);
+            saveData('services', services);
+            renderServices();
+        }
+
+        // ------------------ Quotes ------------------
+        function renderQuotes() {
+            const tbody = document.querySelector('#quotes-table tbody');
+            tbody.innerHTML = '';
+            quotes.forEach(q => {
+                const client = clients.find(c => c.id == q.clientId);
+                const dateStr = new Date(q.date).toLocaleDateString();
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${client ? client.name : ''}</td>
+                    <td>$${q.total.toFixed(2)}</td>
+                    <td>${q.status || 'Pending'}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="viewQuote(${q.id})">View</button>
+                        <button class="secondary" onclick="deleteQuote(${q.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Show new quote form
+        document.getElementById('new-quote-btn').addEventListener('click', function() {
+            showQuoteForm();
+        });
+
+        function showQuoteForm(quote) {
+            document.getElementById('quote-form').reset();
+            document.getElementById('quote-id').value = '';
+            document.getElementById('quote-items').innerHTML = '';
+            document.getElementById('quote-total').textContent = 'Total: $0.00';
+            document.getElementById('quote-modal').classList.remove('hidden');
+            document.getElementById('quote-view').classList.add('hidden');
+            // If editing existing quote
+            if (quote) {
+                document.getElementById('quote-id').value = quote.id;
+                document.getElementById('quote-client').value = quote.clientId;
+                document.getElementById('quote-notes').value = quote.notes || '';
+                quote.items.forEach(item => {
+                    addItemRow(item.serviceId, item.quantity);
+                });
+                updateQuoteTotal();
+            } else {
+                // start with one item row by default
+                addItemRow();
+            }
+        }
+
+        // Hide quote form
+        document.getElementById('cancel-quote-btn').addEventListener('click', function() {
+            document.getElementById('quote-modal').classList.add('hidden');
+            document.getElementById('quote-view').classList.add('hidden');
+        });
+
+        // Add item row to quote
+        document.getElementById('add-item-btn').addEventListener('click', function() {
+            addItemRow();
+        });
+
+        function addItemRow(serviceId = '', quantity = 1) {
+            const container = document.getElementById('quote-items');
+            const row = document.createElement('div');
+            row.className = 'quote-item-row';
+            row.style.display = 'flex';
+            row.style.gap = '0.5rem';
+            row.style.marginTop = '0.5rem';
+            const serviceSelect = document.createElement('select');
+            serviceSelect.style.flex = '2';
+            serviceSelect.innerHTML = '<option value="">Select service</option>';
+            services.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = `${s.name} ($${s.price.toFixed(2)})`;
+                if (s.id == serviceId) opt.selected = true;
+                serviceSelect.appendChild(opt);
+            });
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = '1';
+            qtyInput.step = '1';
+            qtyInput.value = quantity;
+            qtyInput.style.flex = '1';
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.textContent = 'Remove';
+            removeBtn.className = 'secondary';
+            removeBtn.style.flex = '1';
+            removeBtn.addEventListener('click', () => {
+                container.removeChild(row);
+                updateQuoteTotal();
+            });
+            serviceSelect.addEventListener('change', updateQuoteTotal);
+            qtyInput.addEventListener('input', updateQuoteTotal);
+            row.appendChild(serviceSelect);
+            row.appendChild(qtyInput);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        // Update quote total based on items
+        function updateQuoteTotal() {
+            const rows = document.querySelectorAll('#quote-items .quote-item-row');
+            let total = 0;
+            rows.forEach(row => {
+                const serviceId = row.querySelector('select').value;
+                const qty = parseInt(row.querySelector('input').value) || 0;
+                const service = services.find(s => s.id == serviceId);
+                if (service && qty > 0) {
+                    total += service.price * qty;
+                }
+            });
+            document.getElementById('quote-total').textContent = `Total: $${total.toFixed(2)}`;
+            // Auto‑generate scope of work descriptions based on selected services
+            try {
+                const notesField = document.getElementById('quote-notes');
+                if (notesField) {
+                    let scopeLines = [];
+                    rows.forEach(row => {
+                        const serviceId = row.querySelector('select').value;
+                        const qty = parseInt(row.querySelector('input').value) || 0;
+                        const service = services.find(s => s.id == serviceId);
+                        if (service && service.description) {
+                            // Include quantity if more than 1
+                            const prefix = qty > 1 ? `${qty}× ` : '';
+                            scopeLines.push(`${prefix}${service.name}: ${service.description}`);
+                        }
+                    });
+                    notesField.value = scopeLines.join('\n');
+                }
+            } catch (err) {
+                console.warn('Error generating scope of work', err);
+            }
+        }
+
+        // Helper to read files as DataURLs
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => resolve(e.target.result);
+                reader.onerror = err => reject(err);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Save quote
+        document.getElementById('quote-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const quoteIdField = document.getElementById('quote-id');
+            const clientId = parseInt(document.getElementById('quote-client').value);
+            if (!clientId) {
+                alert('Please select a client');
+                return;
+            }
+            const notes = document.getElementById('quote-notes').value.trim();
+            const itemsRows = document.querySelectorAll('#quote-items .quote-item-row');
+            const items = [];
+            itemsRows.forEach(row => {
+                const serviceId = parseInt(row.querySelector('select').value);
+                const qty = parseInt(row.querySelector('input').value) || 0;
+                if (serviceId && qty > 0) {
+                    items.push({ serviceId: serviceId, quantity: qty });
+                }
+            });
+            if (items.length === 0) {
+                alert('Please add at least one service item');
+                return;
+            }
+            // Calculate total
+            let total = 0;
+            items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                total += service.price * item.quantity;
+            });
+            // Handle photos
+            const photoInput = document.getElementById('quote-photos');
+            const photos = [];
+            if (photoInput && photoInput.files && photoInput.files.length > 0) {
+                for (const file of photoInput.files) {
+                    try {
+                        const dataUrl = await readFileAsDataURL(file);
+                        photos.push({ name: file.name, dataUrl });
+                    } catch (err) {
+                        console.warn('Error reading file', file.name, err);
+                    }
+                }
+            }
+            if (quoteIdField.value) {
+                // update existing quote
+                const q = quotes.find(qt => qt.id == quoteIdField.value);
+                if (q) {
+                    q.clientId = clientId;
+                    q.items = items;
+                    q.notes = notes;
+                    q.total = total;
+                    q.photos = photos;
+                }
+            } else {
+                // new quote
+                const newId = generateId();
+                const newQuote = {
+                    id: newId,
+                    date: new Date().toISOString(),
+                    clientId,
+                    items,
+                    notes,
+                    total,
+                    status: 'Pending',
+                    photos
+                };
+                quotes.push(newQuote);
+                // Automatically create a follow‑up task 7 days after quote date
+                try {
+                    const client = clients.find(c => c.id == clientId);
+                    const followUpDate = new Date();
+                    followUpDate.setDate(followUpDate.getDate() + 7);
+                    tasks.push({
+                        id: generateId(),
+                        title: `Follow up with ${client ? client.name : 'client'} for Quote`,
+                        description: 'Check in to see if the quote has been accepted and schedule work.',
+                        dueDate: followUpDate.toISOString().slice(0,10),
+                        completed: false,
+                        quoteId: newId
+                    });
+                    saveData('tasks', tasks);
+                } catch (err) {
+                    console.warn('Error creating follow‑up task', err);
+                }
+            }
+            saveData('quotes', quotes);
+            renderQuotes();
+            document.getElementById('quote-modal').classList.add('hidden');
+        });
+
+        // Delete quote
+        window.deleteQuote = function(id) {
+            if (!confirm('Delete this quote?')) return;
+            quotes = quotes.filter(q => q.id != id);
+            saveData('quotes', quotes);
+            renderQuotes();
+        }
+
+        // View quote details
+        window.viewQuote = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            if (!quote) return;
+            const client = clients.find(c => c.id == quote.clientId);
+            const container = document.getElementById('quote-view');
+            let html = '';
+            html += `<h3>Quote Details</h3>`;
+            html += `<p><strong>Date:</strong> ${new Date(quote.date).toLocaleString()}</p>`;
+            html += `<p><strong>Client:</strong> ${client ? client.name : ''}</p>`;
+            html += `<p><strong>Status:</strong> ${quote.status || 'Pending'}</p>`;
+            html += `<table class="quote-items-table"><thead><tr><th>Service</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead><tbody>`;
+            quote.items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                if (service) {
+                    const lineTotal = service.price * item.quantity;
+                    html += `<tr><td>${service.name}</td><td>${item.quantity}</td><td>$${service.price.toFixed(2)}</td><td>$${lineTotal.toFixed(2)}</td></tr>`;
+                }
+            });
+            html += `</tbody></table>`;
+            html += `<p><strong>Notes:</strong> ${quote.notes || ''}</p>`;
+            // Display attached photos if any
+            if (quote.photos && quote.photos.length > 0) {
+                html += '<p><strong>Photos:</strong></p>';
+                html += '<div style="display:flex; flex-wrap:wrap; gap:8px;">';
+                quote.photos.forEach(photo => {
+                    html += `<a href="${photo.dataUrl}" target="_blank"><img src="${photo.dataUrl}" alt="Photo" style="width:80px;height:80px;object-fit:cover;border:1px solid #ccc;"></a>`;
+                });
+                html += '</div>';
+            }
+            html += `<p><strong>Total:</strong> $${quote.total.toFixed(2)}</p>`;
+            // Display signature if present
+            if (quote.signature) {
+                html += `<p><strong>Signature:</strong></p><img src="${quote.signature}" alt="Signature" style="max-width:200px;border:1px solid #ccc;">`;
+            }
+            // Buttons: Print / Mail / Edit / Sign / Back
+            html += '<div class="actions">';
+            html += `<button class="primary" onclick="printQuote(${quote.id})">Print / Save</button>`;
+            html += `<button class="secondary" onclick="emailQuote(${quote.id})">Email</button>`;
+            html += `<button class="secondary" onclick="editQuote(${quote.id})">Edit</button>`;
+            // Show sign button if no signature yet
+            if (!quote.signature) {
+                html += `<button class="secondary" onclick="openSignaturePad(${quote.id})">Sign Quote</button>`;
+            }
+            html += `<button class="secondary" onclick="backToQuoteList()">Back to list</button>`;
+            html += '</div>';
+            container.innerHTML = html;
+            container.classList.remove('hidden');
+            document.getElementById('quote-modal').classList.add('hidden');
+        }
+
+        window.backToQuoteList = function() {
+            document.getElementById('quote-view').classList.add('hidden');
+        }
+
+        window.editQuote = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            if (!quote) return;
+            showQuoteForm(quote);
+        }
+
+        window.printQuote = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            const client = clients.find(c => c.id == quote.clientId);
+            // Build printable HTML
+            let printHtml = '<html><head><title>Quote</title><style>body{font-family:Arial; margin:20px;} table {border-collapse:collapse; width:100%;} th,td{border:1px solid #ddd; padding:8px;} th{background:#e9c46a;} </style></head><body>';
+            printHtml += `<h2>Quote</h2>`;
+            printHtml += `<p><strong>Date:</strong> ${new Date(quote.date).toLocaleString()}</p>`;
+            printHtml += `<p><strong>Client:</strong> ${client ? client.name : ''}</p>`;
+            printHtml += `<table><thead><tr><th>Service</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead><tbody>`;
+            quote.items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                const lineTotal = service.price * item.quantity;
+                printHtml += `<tr><td>${service.name}</td><td>${item.quantity}</td><td>$${service.price.toFixed(2)}</td><td>$${lineTotal.toFixed(2)}</td></tr>`;
+            });
+            printHtml += `</tbody></table>`;
+            printHtml += `<p><strong>Notes:</strong> ${quote.notes || ''}</p>`;
+            printHtml += `<h3>Total: $${quote.total.toFixed(2)}</h3>`;
+            // include notes
+            if (quote.notes) {
+                printHtml += `<p><strong>Scope of Work:</strong><br>${quote.notes.replace(/\n/g, '<br>')}</p>`;
+            }
+            // include signature if present
+            if (quote.signature) {
+                printHtml += `<p><strong>Signature:</strong><br><img src="${quote.signature}" alt="Signature" style="max-width:200px;border:1px solid #ccc;"></p>`;
+            }
+            printHtml += '</body></html>';
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(printHtml);
+            printWindow.document.close();
+            printWindow.print();
+        }
+
+        window.emailQuote = function(id) {
+            const quote = quotes.find(q => q.id == id);
+            const client = clients.find(c => c.id == quote.clientId);
+            const subject = encodeURIComponent('Quote from Your Lawn Care Provider');
+            let body = `Hello ${client ? client.name : ''},%0D%0A%0D%0A`;
+            body += `Please find your quote below:%0D%0A%0D%0A`;
+            quote.items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                const lineTotal = service.price * item.quantity;
+                body += `${service.name} (x${item.quantity}): $${lineTotal.toFixed(2)}%0D%0A`;
+            });
+            body += `%0D%0ATotal: $${quote.total.toFixed(2)}%0D%0A`;
+            if (quote.notes) body += `%0D%0ANotes: ${quote.notes}%0D%0A`;
+            body += `%0D%0AThank you!`;
+            const mailtoLink = `mailto:${client ? client.email : ''}?subject=${subject}&body=${body}`;
+            window.location.href = mailtoLink;
+        }
+
+        // ------------------ Jobs ------------------
+        function renderJobs() {
+            const tbody = document.querySelector('#jobs-table tbody');
+            tbody.innerHTML = '';
+            jobs.forEach(job => {
+                const client = clients.find(c => c.id == job.clientId);
+                const dateStr = job.date;
+                const tr = document.createElement('tr');
+                let photoCell = '';
+                if (job.photo) {
+                    photoCell = `<a href="${job.photo}" target="_blank"><img src="${job.photo}" alt="photo" style="width:40px;height:40px;object-fit:cover;border:1px solid #ccc;"></a>`;
+                } else {
+                    photoCell = '';
+                }
+                tr.innerHTML = `
+                    <td>${dateStr}</td>
+                    <td>${client ? client.name : ''}</td>
+                    <td>${job.description || ''}</td>
+                    <td>${job.hours ? job.hours.toFixed(2) : ''}</td>
+                    <td>${job.status}</td>
+                    <td>${photoCell}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="deleteJob(${job.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // ------------------ Time Clock ------------------
+        function updateEmployeeSelect() {
+            const select = document.getElementById('clock-employee');
+            if (!select) return;
+            select.innerHTML = '<option value="">Select employee</option>';
+            employees.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.textContent = emp.name;
+                select.appendChild(opt);
+            });
+        }
+
+        document.getElementById('job-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const clientId = parseInt(document.getElementById('job-client').value);
+            const description = document.getElementById('job-description').value.trim();
+            const date = document.getElementById('job-date').value;
+            const startTime = document.getElementById('job-start').value;
+            const endTime = document.getElementById('job-end').value;
+            let hours = parseFloat(document.getElementById('job-hours').value);
+            const status = document.getElementById('job-status').value;
+            if (!clientId) {
+                alert('Please select a client');
+                return;
+            }
+            // Compute hours if not provided but start/end given
+            if ((!hours || hours === 0) && startTime && endTime) {
+                const [sh, sm] = startTime.split(':').map(Number);
+                const [eh, em] = endTime.split(':').map(Number);
+                let diffMinutes = (eh * 60 + em) - (sh * 60 + sm);
+                if (diffMinutes < 0) diffMinutes += 24 * 60;
+                hours = diffMinutes / 60;
+            }
+            // Handle photo
+            let photoDataUrl = null;
+            const photoFile = document.getElementById('job-photo').files[0];
+            if (photoFile) {
+                try {
+                    photoDataUrl = await readFileAsDataURL(photoFile);
+                } catch (err) {
+                    console.warn('Error reading job photo', err);
+                }
+            }
+            jobs.push({ id: generateId(), clientId, description, date, startTime, endTime, hours, status, photo: photoDataUrl });
+            saveData('jobs', jobs);
+            renderJobs();
+            this.reset();
+        });
+
+        window.deleteJob = function(id) {
+            if (!confirm('Delete this job?')) return;
+            jobs = jobs.filter(j => j.id != id);
+            saveData('jobs', jobs);
+            renderJobs();
+        }
+
+        // ------------------ Reports ------------------
+        function renderReports() {
+            const container = document.getElementById('report-content');
+            if (!container) return;
+            const numClients = clients.length;
+            const numQuotes = quotes.length;
+            const totalRevenue = quotes.reduce((sum, q) => sum + (q.total || 0), 0);
+            const avgQuote = numQuotes > 0 ? (totalRevenue / numQuotes) : 0;
+            const numJobs = jobs.length;
+            // Sum hours from jobs or timelogs if available
+            let totalJobHours = 0;
+            if (jobs && jobs.length > 0) {
+                jobs.forEach(job => {
+                    if (job.hours) totalJobHours += job.hours;
+                });
+            }
+            if (typeof timelogs !== 'undefined' && timelogs.length > 0) {
+                timelogs.forEach(log => {
+                    if (log.hours) totalJobHours += log.hours;
+                });
+            }
+            let html = '';
+            html += `<p><strong>Total Clients:</strong> ${numClients}</p>`;
+            html += `<p><strong>Total Quotes:</strong> ${numQuotes}</p>`;
+            html += `<p><strong>Total Revenue (Quotes):</strong> $${totalRevenue.toFixed(2)}</p>`;
+            html += `<p><strong>Average Quote Value:</strong> $${avgQuote.toFixed(2)}</p>`;
+            html += `<p><strong>Total Jobs:</strong> ${numJobs}</p>`;
+            html += `<p><strong>Total Hours Logged:</strong> ${totalJobHours.toFixed(2)}</p>`;
+            container.innerHTML = html;
+        }
+
+        // ------------------ Leads ------------------
+        function renderLeads() {
+            const tbody = document.querySelector('#leads-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            leads.forEach(lead => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${lead.name}</td>
+                    <td>${lead.email || ''}</td>
+                    <td>${lead.phone || ''}</td>
+                    <td>${lead.stage}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="editLead(${lead.id})">Edit</button>
+                        <button class="secondary" onclick="deleteLead(${lead.id})">Delete</button>
+                        <button class="secondary" onclick="convertLead(${lead.id})">Convert to Client</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Save or update lead
+        document.getElementById('lead-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idField = document.getElementById('lead-id');
+            const name = document.getElementById('lead-name').value.trim();
+            const email = document.getElementById('lead-email').value.trim();
+            const phone = document.getElementById('lead-phone').value.trim();
+            const notes = document.getElementById('lead-notes').value.trim();
+            const stage = document.getElementById('lead-stage').value;
+            if (!name) return;
+            if (idField.value) {
+                const lead = leads.find(l => l.id == idField.value);
+                if (lead) {
+                    lead.name = name;
+                    lead.email = email;
+                    lead.phone = phone;
+                    lead.notes = notes;
+                    lead.stage = stage;
+                }
+            } else {
+                leads.push({ id: generateId(), name, email, phone, notes, stage });
+            }
+            saveData('leads', leads);
+            renderLeads();
+            this.reset();
+            idField.value = '';
+            document.getElementById('cancel-lead-btn').classList.add('hidden');
+        });
+
+        // Cancel editing lead
+        document.getElementById('cancel-lead-btn').addEventListener('click', function() {
+            document.getElementById('lead-form').reset();
+            document.getElementById('lead-id').value = '';
+            this.classList.add('hidden');
+        });
+
+        // Edit lead
+        window.editLead = function(id) {
+            const lead = leads.find(l => l.id == id);
+            if (!lead) return;
+            document.getElementById('lead-id').value = lead.id;
+            document.getElementById('lead-name').value = lead.name;
+            document.getElementById('lead-email').value = lead.email || '';
+            document.getElementById('lead-phone').value = lead.phone || '';
+            document.getElementById('lead-notes').value = lead.notes || '';
+            document.getElementById('lead-stage').value = lead.stage;
+            document.getElementById('cancel-lead-btn').classList.remove('hidden');
+        }
+
+        // Delete lead
+        window.deleteLead = function(id) {
+            if (!confirm('Delete this lead?')) return;
+            leads = leads.filter(l => l.id != id);
+            saveData('leads', leads);
+            renderLeads();
+        }
+
+        // Convert lead to client
+        window.convertLead = function(id) {
+            const lead = leads.find(l => l.id == id);
+            if (!lead) return;
+            // Add new client using lead data
+            clients.push({ id: generateId(), name: lead.name, company: '', email: lead.email, phone: lead.phone, address: '' });
+            saveData('clients', clients);
+            // Remove lead
+            leads = leads.filter(l => l.id != id);
+            saveData('leads', leads);
+            renderLeads();
+            renderClients();
+            alert('Lead converted to client.');
+        }
+
+        // ------------------ Employees & Time Clock ------------------
+        function renderEmployees() {
+            const tbody = document.querySelector('#employees-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            employees.forEach(emp => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${emp.name}</td>
+                    <td>${emp.role || ''}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="editEmployee(${emp.id})">Edit</button>
+                        <button class="secondary" onclick="deleteEmployee(${emp.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateClockEmployeeSelect();
+        }
+
+        function updateClockEmployeeSelect() {
+            const select = document.getElementById('clock-employee');
+            if (!select) return;
+            select.innerHTML = '<option value="">Select employee</option>';
+            employees.forEach(emp => {
+                const opt = document.createElement('option');
+                opt.value = emp.id;
+                opt.textContent = emp.name;
+                select.appendChild(opt);
+            });
+        }
+
+        // Employee form handlers
+        document.getElementById('employee-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idField = document.getElementById('employee-id');
+            const name = document.getElementById('employee-name').value.trim();
+            const role = document.getElementById('employee-role').value.trim();
+            if (!name) return;
+            if (idField.value) {
+                const emp = employees.find(emp => emp.id == idField.value);
+                if (emp) {
+                    emp.name = name;
+                    emp.role = role;
+                }
+            } else {
+                employees.push({ id: generateId(), name, role });
+            }
+            saveData('employees', employees);
+            renderEmployees();
+            this.reset();
+            idField.value = '';
+            document.getElementById('cancel-employee-btn').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-employee-btn').addEventListener('click', function() {
+            document.getElementById('employee-form').reset();
+            document.getElementById('employee-id').value = '';
+            this.classList.add('hidden');
+        });
+
+        window.editEmployee = function(id) {
+            const emp = employees.find(emp => emp.id == id);
+            if (!emp) return;
+            document.getElementById('employee-id').value = emp.id;
+            document.getElementById('employee-name').value = emp.name;
+            document.getElementById('employee-role').value = emp.role || '';
+            document.getElementById('cancel-employee-btn').classList.remove('hidden');
+        }
+
+        window.deleteEmployee = function(id) {
+            if (!confirm('Delete this employee?')) return;
+            employees = employees.filter(emp => emp.id != id);
+            saveData('employees', employees);
+            // Remove open timelogs for this employee
+            timelogs = timelogs.filter(log => log.employeeId != id);
+            saveData('timelogs', timelogs);
+            renderEmployees();
+            renderTimeLogs();
+        }
+
+        // Time clock handlers
+        document.getElementById('clock-in-btn').addEventListener('click', function() {
+            const empId = parseInt(document.getElementById('clock-employee').value);
+            if (!empId) {
+                alert('Select an employee');
+                return;
+            }
+            // check if open log exists
+            const open = timelogs.find(log => log.employeeId == empId && !log.clockOut);
+            if (open) {
+                alert('Employee is already clocked in');
+                return;
+            }
+            const now = new Date();
+            timelogs.push({ id: generateId(), employeeId: empId, date: now.toISOString().slice(0,10), clockIn: now.toISOString(), clockOut: null, hours: null });
+            saveData('timelogs', timelogs);
+            renderTimeLogs();
+        });
+
+        document.getElementById('clock-out-btn').addEventListener('click', function() {
+            const empId = parseInt(document.getElementById('clock-employee').value);
+            if (!empId) {
+                alert('Select an employee');
+                return;
+            }
+            const open = timelogs.find(log => log.employeeId == empId && !log.clockOut);
+            if (!open) {
+                alert('Employee is not clocked in');
+                return;
+            }
+            const now = new Date();
+            open.clockOut = now.toISOString();
+            // Calculate hours
+            const start = new Date(open.clockIn);
+            const diffMs = now - start;
+            open.hours = diffMs / (1000 * 60 * 60);
+            saveData('timelogs', timelogs);
+            renderTimeLogs();
+        });
+
+        function renderTimeLogs() {
+            const tbody = document.querySelector('#timelogs-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            timelogs.forEach(log => {
+                const emp = employees.find(emp => emp.id == log.employeeId);
+                const tr = document.createElement('tr');
+                const ci = log.clockIn ? new Date(log.clockIn) : null;
+                const co = log.clockOut ? new Date(log.clockOut) : null;
+                tr.innerHTML = `
+                    <td>${emp ? emp.name : ''}</td>
+                    <td>${log.date}</td>
+                    <td>${ci ? ci.toLocaleTimeString() : ''}</td>
+                    <td>${co ? co.toLocaleTimeString() : ''}</td>
+                    <td>${log.hours ? log.hours.toFixed(2) : ''}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="deleteTimeLog(${log.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            updateClockEmployeeSelect();
+        }
+
+        window.deleteTimeLog = function(id) {
+            if (!confirm('Delete this time log?')) return;
+            timelogs = timelogs.filter(log => log.id != id);
+            saveData('timelogs', timelogs);
+            renderTimeLogs();
+        }
+
+        // ------------------ Signature pad functions ------------------
+        let currentSigningQuoteId = null;
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+
+        window.openSignaturePad = function(quoteId) {
+            currentSigningQuoteId = quoteId;
+            // Show modal
+            document.getElementById('signature-modal').classList.remove('hidden');
+            // Clear canvas
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function getCanvasCoords(event, canvas) {
+            const rect = canvas.getBoundingClientRect();
+            return {
+                x: event.clientX - rect.left,
+                y: event.clientY - rect.top
+            };
+        }
+
+        function startDraw(e) {
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            const pos = getCanvasCoords(e, canvas);
+            isDrawing = true;
+            lastX = pos.x;
+            lastY = pos.y;
+            e.preventDefault();
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            const pos = getCanvasCoords(e, canvas);
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+            lastX = pos.x;
+            lastY = pos.y;
+            e.preventDefault();
+        }
+
+        function endDraw(e) {
+            isDrawing = false;
+            e.preventDefault();
+        }
+
+        // Attach canvas event listeners after DOM ready
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('signature-canvas');
+            if (canvas) {
+                canvas.addEventListener('mousedown', startDraw);
+                canvas.addEventListener('mousemove', draw);
+                canvas.addEventListener('mouseup', endDraw);
+                canvas.addEventListener('mouseout', endDraw);
+                // Touch events for mobile
+                canvas.addEventListener('touchstart', function(e) {
+                    const t = e.touches[0];
+                    startDraw({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => e.preventDefault() });
+                });
+                canvas.addEventListener('touchmove', function(e) {
+                    const t = e.touches[0];
+                    draw({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => e.preventDefault() });
+                });
+                canvas.addEventListener('touchend', function(e) {
+                    endDraw({ preventDefault: () => e.preventDefault() });
+                });
+            }
+        });
+
+        // Clear signature canvas
+        document.getElementById('clear-signature-btn').addEventListener('click', function() {
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        });
+
+        // Cancel signature modal
+        document.getElementById('cancel-signature-btn').addEventListener('click', function() {
+            document.getElementById('signature-modal').classList.add('hidden');
+            currentSigningQuoteId = null;
+        });
+
+        // Save signature
+        document.getElementById('save-signature-btn').addEventListener('click', function() {
+            if (currentSigningQuoteId == null) {
+                document.getElementById('signature-modal').classList.add('hidden');
+                return;
+            }
+            const canvas = document.getElementById('signature-canvas');
+            const dataUrl = canvas.toDataURL();
+            // Save to quote
+            const quote = quotes.find(q => q.id == currentSigningQuoteId);
+            if (quote) {
+                quote.signature = dataUrl;
+                saveData('quotes', quotes);
+            }
+            document.getElementById('signature-modal').classList.add('hidden');
+            // Refresh view
+            viewQuote(currentSigningQuoteId);
+            currentSigningQuoteId = null;
+        });
+
+        // ------------------ Tasks & Reminders ------------------
+        function renderTasks() {
+            const tbody = document.querySelector('#tasks-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            tasks.forEach(task => {
+                const tr = document.createElement('tr');
+                const dueStr = task.dueDate ? new Date(task.dueDate).toLocaleDateString() : '';
+                tr.innerHTML = `
+                    <td>${task.title}</td>
+                    <td>${dueStr}</td>
+                    <td>${task.completed ? 'Completed' : 'Pending'}</td>
+                    <td class="actions">
+                        ${task.completed ? '' : `<button class="secondary" onclick="completeTask(${task.id})">Mark Complete</button>`}
+                        <button class="secondary" onclick="editTask(${task.id})">Edit</button>
+                        <button class="secondary" onclick="deleteTask(${task.id})">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Task form submission
+        const taskForm = document.getElementById('task-form');
+        if (taskForm) {
+            taskForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const idField = document.getElementById('task-id');
+                const title = document.getElementById('task-title').value.trim();
+                const description = document.getElementById('task-description').value.trim();
+                const due = document.getElementById('task-due').value;
+                if (!title) return;
+                if (idField.value) {
+                    const task = tasks.find(t => t.id == idField.value);
+                    if (task) {
+                        task.title = title;
+                        task.description = description;
+                        task.dueDate = due;
+                    }
+                } else {
+                    tasks.push({ id: generateId(), title, description, dueDate: due, completed: false });
+                }
+                saveData('tasks', tasks);
+                renderTasks();
+                this.reset();
+                document.getElementById('task-id').value = '';
+                document.getElementById('cancel-task-btn').classList.add('hidden');
+            });
+        }
+
+        // Cancel editing task
+        const cancelTaskBtn = document.getElementById('cancel-task-btn');
+        if (cancelTaskBtn) {
+            cancelTaskBtn.addEventListener('click', function() {
+                document.getElementById('task-form').reset();
+                document.getElementById('task-id').value = '';
+                this.classList.add('hidden');
+            });
+        }
+
+        // Edit task
+        window.editTask = function(id) {
+            const task = tasks.find(t => t.id == id);
+            if (!task) return;
+            document.getElementById('task-id').value = task.id;
+            document.getElementById('task-title').value = task.title;
+            document.getElementById('task-description').value = task.description || '';
+            document.getElementById('task-due').value = task.dueDate || '';
+            document.getElementById('cancel-task-btn').classList.remove('hidden');
+        }
+
+        // Delete task
+        window.deleteTask = function(id) {
+            if (!confirm('Delete this task?')) return;
+            tasks = tasks.filter(t => t.id != id);
+            saveData('tasks', tasks);
+            renderTasks();
+        }
+
+        // Complete task
+        window.completeTask = function(id) {
+            const task = tasks.find(t => t.id == id);
+            if (task) {
+                task.completed = true;
+                saveData('tasks', tasks);
+                renderTasks();
+            }
+        }
+
+        // Initial rendering
+        renderClients();
+        renderServices();
+        renderQuotes();
+        renderJobs();
+        // Render employees and time logs for initial load
+        renderEmployees();
+        renderTimeLogs();
+        // Render tasks and leads by default to ensure data loaded
+        renderTasks();
+        renderLeads();
+    </script>
 </body>
 </html>
