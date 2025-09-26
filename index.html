@@ -149,6 +149,12 @@
                 <input type="text" id="client-phone" />
                 <label for="client-address">Address</label>
                 <textarea id="client-address" rows="2"></textarea>
+                <!-- Hidden fields to store latitude and longitude when using GPS -->
+                <input type="hidden" id="client-lat" />
+                <input type="hidden" id="client-lng" />
+                <!-- Button to capture the user's current location and auto‑fill the address -->
+                <button type="button" class="secondary" id="use-current-location">Use Current Location</button>
+                <span id="location-status" class="small"></span>
                 <button type="submit" class="primary" id="save-client-btn">Save Client</button>
                 <button type="button" class="secondary hidden" id="cancel-client-btn">Cancel</button>
             </form>
@@ -537,6 +543,15 @@
         }
 
         // Initialize collections
+
+        // Mapbox access token for reverse geocoding.  This token enables the app to
+        // convert latitude and longitude coordinates into a street address.  The
+        // token provided by the user is embedded here.  If you rotate tokens in
+        // the future, update this value accordingly.  Keeping tokens in client
+        // code is fine for demonstration, but in production you should store
+        // secrets on the server or in environment variables rather than
+        // committing them to version control.
+        const MAPBOX_TOKEN = 'pk.eyJ1IjoiaWNsYXkwMzA3IiwiYSI6ImNtZzFhY244bTBuaG0ya3B0aGJpbzhsbDAifQ.xoxBNkO6_gxGXLMvOE5nJw';
         let clients = loadData('clients', []);
         let services = loadData('services', []);
         let quotes = loadData('quotes', []);
@@ -615,6 +630,57 @@
             });
         });
 
+        // ------------------ Geolocation for Address Autofill ------------------
+        // Capture current device location and reverse geocode to fill the client
+        // address field.  When the "Use Current Location" button is clicked,
+        // request geolocation permissions, then call Mapbox's reverse geocoding
+        // API to translate coordinates into a human‑readable address.  Latitude
+        // and longitude are stored in hidden inputs so they can be saved with
+        // the client record.  If geolocation is not supported or the user
+        // declines, an appropriate status message is shown.
+        const useLocationBtn = document.getElementById('use-current-location');
+        if (useLocationBtn) {
+            useLocationBtn.addEventListener('click', async function () {
+                const statusEl = document.getElementById('location-status');
+                statusEl.textContent = '';
+                // Ensure geolocation API is available
+                if (!navigator.geolocation) {
+                    statusEl.textContent = 'Geolocation not supported by this browser.';
+                    return;
+                }
+                statusEl.textContent = 'Obtaining location…';
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    document.getElementById('client-lat').value = lat;
+                    document.getElementById('client-lng').value = lng;
+                    statusEl.textContent = 'Looking up address…';
+                    try {
+                        const res = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${lng},${lat}.json?access_token=${MAPBOX_TOKEN}`);
+                        if (!res.ok) throw new Error('Request failed');
+                        const data = await res.json();
+                        if (data && data.features && data.features.length > 0) {
+                            const place = data.features[0].place_name;
+                            document.getElementById('client-address').value = place || '';
+                            statusEl.textContent = 'Address filled from GPS.';
+                        } else {
+                            statusEl.textContent = 'No address found for this location.';
+                        }
+                    } catch (err) {
+                        console.error('Error reverse geocoding:', err);
+                        statusEl.textContent = 'Error retrieving address.';
+                    }
+                }, (error) => {
+                    console.error('Geolocation error:', error);
+                    if (error.code === error.PERMISSION_DENIED) {
+                        statusEl.textContent = 'Location permission denied.';
+                    } else {
+                        statusEl.textContent = 'Could not determine location.';
+                    }
+                });
+            });
+        }
+
         // ------------------ Clients ------------------
         function renderClients() {
             const tbody = document.querySelector('#clients-table tbody');
@@ -682,6 +748,11 @@
             const email = document.getElementById('client-email').value.trim();
             const phone = document.getElementById('client-phone').value.trim();
             const address = document.getElementById('client-address').value.trim();
+            // Retrieve latitude and longitude from hidden inputs, if present
+            const latVal = document.getElementById('client-lat').value;
+            const lngVal = document.getElementById('client-lng').value;
+            const lat = latVal ? parseFloat(latVal) : null;
+            const lng = lngVal ? parseFloat(lngVal) : null;
             if (!name) return;
             if (idField.value) {
                 // update existing client
@@ -692,10 +763,12 @@
                     client.email = email;
                     client.phone = phone;
                     client.address = address;
+                    client.lat = lat;
+                    client.lng = lng;
                 }
             } else {
                 // new client
-                clients.push({ id: generateId(), name, company, email, phone, address });
+                clients.push({ id: generateId(), name, company, email, phone, address, lat, lng });
             }
             saveData('clients', clients);
             renderClients();
@@ -722,6 +795,9 @@
             document.getElementById('client-email').value = client.email || '';
             document.getElementById('client-phone').value = client.phone || '';
             document.getElementById('client-address').value = client.address || '';
+            // Populate hidden lat/lng fields if available
+            if (client.lat != null) document.getElementById('client-lat').value = client.lat;
+            if (client.lng != null) document.getElementById('client-lng').value = client.lng;
             document.getElementById('cancel-client-btn').classList.remove('hidden');
         }
 
