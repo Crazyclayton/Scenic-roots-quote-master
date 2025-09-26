@@ -123,6 +123,9 @@
         <button id="nav-services">Services</button>
         <button id="nav-quotes">Quotes</button>
         <button id="nav-jobs">Jobs</button>
+        <!-- Add navigation for invoices and expenses to approximate Jobber/Yardbook functionality -->
+        <button id="nav-invoices">Invoices</button>
+        <button id="nav-expenses">Expenses</button>
         <button id="nav-employees">Employees</button>
         <button id="nav-reports">Reports</button>
         <button id="nav-leads">Leads</button>
@@ -223,17 +226,6 @@
                         <!-- Items will be inserted here -->
                     </div>
                     <button type="button" class="secondary" id="add-item-btn">Add Service</button>
-                    <!-- Additional fields for discounts and taxes -->
-                    <label for="quote-discount">Discount (%)</label>
-                    <input type="number" id="quote-discount" min="0" max="100" step="0.01" value="0" />
-                    <label for="quote-tax">Tax (%)</label>
-                    <input type="number" id="quote-tax" min="0" max="100" step="0.01" value="0" />
-                    <!-- Additional fields for quote expiration and deposit requirements -->
-                    <label for="quote-validuntil">Valid Until</label>
-                    <input type="date" id="quote-validuntil" />
-                    <label for="quote-deposit">Deposit (%)</label>
-                    <input type="number" id="quote-deposit" min="0" max="100" step="0.01" value="0" />
-                    <!-- Display for totals with breakdown and deposit information -->
                     <div id="quote-total" style="margin-top: 1rem; font-weight: bold;">Total: $0.00</div>
                     <label for="quote-notes">Notes / Description</label>
                     <textarea id="quote-notes" rows="2"></textarea>
@@ -297,6 +289,81 @@
             </table>
         </section>
 
+        <!-- Invoices Section -->
+        <section id="section-invoices">
+            <h2>Invoices</h2>
+            <!-- Button to create a new invoice -->
+            <button class="primary" id="new-invoice-btn">Create New Invoice</button>
+            <!-- Invoices list -->
+            <table id="invoices-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Client</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+            <!-- Invoice form modal -->
+            <div id="invoice-modal" class="hidden">
+                <h3>Create / Edit Invoice</h3>
+                <form id="invoice-form">
+                    <input type="hidden" id="invoice-id" />
+                    <label for="invoice-client">Client</label>
+                    <select id="invoice-client"></select>
+                    <label for="invoice-date">Invoice Date</label>
+                    <input type="date" id="invoice-date" />
+                    <label for="invoice-due">Due Date</label>
+                    <input type="date" id="invoice-due" />
+                    <h4>Invoice Items</h4>
+                    <div id="invoice-items"></div>
+                    <button type="button" class="secondary" id="add-invoice-item-btn">Add Service</button>
+                    <div id="invoice-total" style="margin-top:1rem;font-weight:bold;">Total: $0.00</div>
+                    <label for="invoice-notes">Notes / Terms</label>
+                    <textarea id="invoice-notes" rows="2"></textarea>
+                    <div style="margin-top:10px">
+                        <button type="submit" class="primary">Save Invoice</button>
+                        <button type="button" class="secondary" id="cancel-invoice-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+            <!-- Invoice view container -->
+            <div id="invoice-view" class="hidden"></div>
+        </section>
+
+        <!-- Expenses Section -->
+        <section id="section-expenses">
+            <h2>Expenses</h2>
+            <form id="expense-form">
+                <input type="hidden" id="expense-id" />
+                <label for="expense-date">Date</label>
+                <input type="date" id="expense-date" required />
+                <label for="expense-description">Description</label>
+                <input type="text" id="expense-description" required />
+                <label for="expense-amount">Amount</label>
+                <input type="number" id="expense-amount" step="0.01" min="0" required />
+                <div style="margin-top:10px">
+                    <button type="submit" class="primary">Save Expense</button>
+                    <button type="button" class="secondary hidden" id="cancel-expense-btn">Cancel</button>
+                </div>
+            </form>
+            <table id="expenses-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Description</th>
+                        <th>Amount</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </section>
+
         <!-- Reports Section -->
         <section id="section-reports">
             <h2>Analytics &amp; Reporting</h2>
@@ -348,31 +415,22 @@
             <h3>Employee List</h3>
             <form id="employee-form">
                 <input type="hidden" id="employee-id" />
-                <!-- Split name into first and last name for better data structure -->
-                <label for="employee-firstname">First Name</label>
-                <input type="text" id="employee-firstname" required />
-                <label for="employee-lastname">Last Name</label>
-                <input type="text" id="employee-lastname" required />
+                <label for="employee-name">Name</label>
+                <input type="text" id="employee-name" required />
                 <label for="employee-role">Role</label>
                 <input type="text" id="employee-role" />
-                <!-- Pay rate input added to capture hourly wage for each employee -->
-                <label for="employee-payrate">Pay Rate ($/hr)</label>
-                <input type="number" id="employee-payrate" step="0.01" min="0" placeholder="e.g. 15.50" />
+                <!-- Added hourly rate field for employees -->
+                <label for="employee-rate">Hourly Rate</label>
+                <input type="number" id="employee-rate" step="0.01" min="0" placeholder="0.00" />
                 <button type="submit" class="primary">Save Employee</button>
                 <button type="button" class="secondary hidden" id="cancel-employee-btn">Cancel</button>
             </form>
             <table id="employees-table">
                 <thead>
                     <tr>
-                        <th>First Name</th>
-                        <th>Last Name</th>
+                        <th>Name</th>
                         <th>Role</th>
-                        <!-- Display the pay rate for each employee -->
-                        <th>Pay Rate ($/hr)</th>
-                        <!-- Show total hours worked by the employee in the current week -->
-                        <th>Total Hours (This Week)</th>
-                        <!-- Show total pay earned by the employee in the current week -->
-                        <th>Total Pay ($) (This Week)</th>
+                        <th>Rate</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -396,8 +454,7 @@
                         <th>Clock In</th>
                         <th>Clock Out</th>
                         <th>Hours</th>
-                        <!-- New column to show calculated pay based on hours and employee pay rate -->
-                        <th>Pay ($)</th>
+                        <th>Pay</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -489,6 +546,12 @@
         let leads = loadData('leads', []);
         let tasks = loadData('tasks', []);
 
+        // Initialize invoices and expenses collections
+        // Invoices store billing records with client, date, due date, line items, total, notes and status (Paid/Unpaid)
+        // Expenses track business spending records with date, description and amount
+        let invoices = loadData('invoices', []);
+        let expenses = loadData('expenses', []);
+
         // Populate default services if none exist
         if (services.length === 0) {
             // Pre‑populated services derived from your pricing guides.  Prices reflect
@@ -544,6 +607,8 @@
                     renderEmployees();
                     renderTimeLogs();
                 }
+                if (target === 'section-invoices') renderInvoices();
+                if (target === 'section-expenses') renderExpenses();
                 if (target === 'section-reports') renderReports();
                 if (target === 'section-leads') renderLeads();
                 if (target === 'section-tasks') renderTasks();
@@ -593,6 +658,17 @@
                     opt.value = c.id;
                     opt.textContent = c.name;
                     jobClientSelect.appendChild(opt);
+                });
+            }
+            // Invoice form client select
+            const invoiceClientSelect = document.getElementById('invoice-client');
+            if (invoiceClientSelect) {
+                invoiceClientSelect.innerHTML = '<option value="">Select client</option>';
+                clients.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    invoiceClientSelect.appendChild(opt);
                 });
             }
         }
@@ -767,27 +843,13 @@
                 document.getElementById('quote-id').value = quote.id;
                 document.getElementById('quote-client').value = quote.clientId;
                 document.getElementById('quote-notes').value = quote.notes || '';
-                // Set discount, tax, valid until, and deposit values if present, otherwise default to 0 or date
-                document.getElementById('quote-discount').value = quote.discount != null ? quote.discount : 0;
-                document.getElementById('quote-tax').value = quote.tax != null ? quote.tax : 0;
-                document.getElementById('quote-validuntil').value = quote.validUntil ? quote.validUntil : '';
-                document.getElementById('quote-deposit').value = quote.deposit != null ? quote.deposit : 0;
                 quote.items.forEach(item => {
                     addItemRow(item.serviceId, item.quantity);
                 });
                 updateQuoteTotal();
             } else {
-                // reset discount, tax, deposit to zero for new quote
-                document.getElementById('quote-discount').value = 0;
-                document.getElementById('quote-tax').value = 0;
-                document.getElementById('quote-deposit').value = 0;
-                // default valid until date: 30 days from today
-                const defaultDate = new Date();
-                defaultDate.setDate(defaultDate.getDate() + 30);
-                document.getElementById('quote-validuntil').value = defaultDate.toISOString().slice(0, 10);
                 // start with one item row by default
                 addItemRow();
-                updateQuoteTotal();
             }
         }
 
@@ -845,40 +907,16 @@
         // Update quote total based on items
         function updateQuoteTotal() {
             const rows = document.querySelectorAll('#quote-items .quote-item-row');
-            // Calculate subtotal (sum of service line items)
-            let subtotal = 0;
+            let total = 0;
             rows.forEach(row => {
                 const serviceId = row.querySelector('select').value;
                 const qty = parseInt(row.querySelector('input').value) || 0;
                 const service = services.find(s => s.id == serviceId);
                 if (service && qty > 0) {
-                    subtotal += service.price * qty;
+                    total += service.price * qty;
                 }
             });
-            // Read discount and tax percentages
-            const discountPercent = parseFloat(document.getElementById('quote-discount')?.value) || 0;
-            const taxPercent = parseFloat(document.getElementById('quote-tax')?.value) || 0;
-            // Ensure valid ranges
-            const disc = Math.max(0, Math.min(100, discountPercent));
-            const tax = Math.max(0, Math.min(100, taxPercent));
-            const discountAmount = subtotal * (disc / 100);
-            const subtotalAfterDiscount = subtotal - discountAmount;
-            const taxAmount = subtotalAfterDiscount * (tax / 100);
-            const finalTotal = subtotalAfterDiscount + taxAmount;
-            // Read deposit percentage
-            const depositPercent = parseFloat(document.getElementById('quote-deposit')?.value) || 0;
-            const dep = Math.max(0, Math.min(100, depositPercent));
-            const depositAmount = finalTotal * (dep / 100);
-            // Update the total display with breakdown including deposit and balance
-            const totalDiv = document.getElementById('quote-total');
-            if (totalDiv) {
-                totalDiv.innerHTML = `<strong>Subtotal:</strong> $${subtotal.toFixed(2)}<br>` +
-                    `<strong>Discount (${disc.toFixed(2)}%):</strong> -$${discountAmount.toFixed(2)}<br>` +
-                    `<strong>Tax (${tax.toFixed(2)}%):</strong> $${taxAmount.toFixed(2)}<br>` +
-                    `<strong>Total:</strong> $${finalTotal.toFixed(2)}<br>` +
-                    `<strong>Deposit (${dep.toFixed(2)}%):</strong> $${depositAmount.toFixed(2)}<br>` +
-                    `<strong>Balance After Deposit:</strong> $${(finalTotal - depositAmount).toFixed(2)}`;
-            }
+            document.getElementById('quote-total').textContent = `Total: $${total.toFixed(2)}`;
             // Auto‑generate scope of work descriptions based on selected services
             try {
                 const notesField = document.getElementById('quote-notes');
@@ -900,10 +938,6 @@
                 console.warn('Error generating scope of work', err);
             }
         }
-        // Attach listeners to discount, tax and deposit inputs to recalculate totals dynamically
-        document.getElementById('quote-discount').addEventListener('input', updateQuoteTotal);
-        document.getElementById('quote-tax').addEventListener('input', updateQuoteTotal);
-        document.getElementById('quote-deposit').addEventListener('input', updateQuoteTotal);
 
         // Helper to read files as DataURLs
         function readFileAsDataURL(file) {
@@ -938,22 +972,12 @@
                 alert('Please add at least one service item');
                 return;
             }
-            // Calculate subtotal and apply discount, tax, and deposit
-            let subtotal = 0;
+            // Calculate total
+            let total = 0;
             items.forEach(item => {
                 const service = services.find(s => s.id == item.serviceId);
-                subtotal += service.price * item.quantity;
+                total += service.price * item.quantity;
             });
-            const discountPercent = parseFloat(document.getElementById('quote-discount').value) || 0;
-            const taxPercent = parseFloat(document.getElementById('quote-tax').value) || 0;
-            const depositPercent = parseFloat(document.getElementById('quote-deposit').value) || 0;
-            const disc = Math.max(0, Math.min(100, discountPercent));
-            const tax = Math.max(0, Math.min(100, taxPercent));
-            const dep = Math.max(0, Math.min(100, depositPercent));
-            const discountAmount = subtotal * (disc / 100);
-            const subtotalAfterDiscount = subtotal - discountAmount;
-            const taxAmount = subtotalAfterDiscount * (tax / 100);
-            const finalTotal = subtotalAfterDiscount + taxAmount;
             // Handle photos
             const photoInput = document.getElementById('quote-photos');
             const photos = [];
@@ -974,12 +998,7 @@
                     q.clientId = clientId;
                     q.items = items;
                     q.notes = notes;
-                    q.total = finalTotal;
-                    q.discount = disc;
-                    q.tax = tax;
-                    q.deposit = dep;
-                    // valid until may be blank if user didn't select
-                    q.validUntil = document.getElementById('quote-validuntil').value || null;
+                    q.total = total;
                     q.photos = photos;
                 }
             } else {
@@ -991,11 +1010,7 @@
                     clientId,
                     items,
                     notes,
-                    total: finalTotal,
-                    discount: disc,
-                    tax: tax,
-                    deposit: dep,
-                    validUntil: document.getElementById('quote-validuntil').value || null,
+                    total,
                     status: 'Pending',
                     photos
                 };
@@ -1061,51 +1076,9 @@
                 });
                 html += '</div>';
             }
-            // Compute subtotal, discount and tax for display
-            let subtotal = 0;
-            quote.items.forEach(item => {
-                const service = services.find(s => s.id == item.serviceId);
-                if (service) {
-                    subtotal += service.price * item.quantity;
-                }
-            });
-            const disc = quote.discount || 0;
-            const tax = quote.tax || 0;
-            const discountAmount = subtotal * (disc / 100);
-            const subtotalAfterDiscount = subtotal - discountAmount;
-            const taxAmount = subtotalAfterDiscount * (tax / 100);
-            html += `<p><strong>Subtotal:</strong> $${subtotal.toFixed(2)}</p>`;
-            // Show discount if applicable
-            if (disc) {
-                html += `<p><strong>Discount (${disc}%):</strong> -$${discountAmount.toFixed(2)}</p>`;
-            }
-            // Show tax if applicable
-            if (tax) {
-                html += `<p><strong>Tax (${tax}%):</strong> $${taxAmount.toFixed(2)}</p>`;
-            }
             html += `<p><strong>Total:</strong> $${quote.total.toFixed(2)}</p>`;
-            // Display quote expiration date
-            if (quote.validUntil) {
-                html += `<p><strong>Valid Until:</strong> ${new Date(quote.validUntil).toLocaleDateString()}</p>`;
-            }
-            // Display deposit information
-            if (quote.deposit && quote.deposit > 0) {
-                const depositAmount = quote.total * (quote.deposit / 100);
-                html += `<p><strong>Deposit (${quote.deposit}%):</strong> $${depositAmount.toFixed(2)}</p>`;
-                html += `<p><strong>Balance After Deposit:</strong> $${(quote.total - depositAmount).toFixed(2)}</p>`;
-            }
-            // Buttons: Accept/Decline/Convert/Print/Mail/Edit/Back
+            // Buttons: Print / Mail / Edit / Back
             html += '<div class="actions">';
-            // Show accept/decline options for pending quotes
-            const status = quote.status || 'Pending';
-            if (status === 'Pending') {
-                html += `<button class="primary" onclick="acceptQuote(${quote.id})">Accept Quote</button>`;
-                html += `<button class="secondary" onclick="declineQuote(${quote.id})">Decline Quote</button>`;
-            }
-            // Show convert to job for accepted quotes
-            if (status === 'Accepted') {
-                html += `<button class="primary" onclick="convertToJob(${quote.id})">Convert to Job</button>`;
-            }
             html += `<button class="primary" onclick="printQuote(${quote.id})">Print / Save</button>`;
             html += `<button class="secondary" onclick="emailQuote(${quote.id})">Email</button>`;
             html += `<button class="secondary" onclick="editQuote(${quote.id})">Edit</button>`;
@@ -1248,51 +1221,6 @@
             window.location.href = mailtoLink;
         }
 
-        // Accept quote: mark as accepted and save
-        window.acceptQuote = function(id) {
-            const quote = quotes.find(q => q.id == id);
-            if (!quote) return;
-            if (!confirm('Mark this quote as accepted?')) return;
-            quote.status = 'Accepted';
-            saveData('quotes', quotes);
-            renderQuotes();
-            viewQuote(id);
-        }
-
-        // Decline quote: mark as declined and save
-        window.declineQuote = function(id) {
-            const quote = quotes.find(q => q.id == id);
-            if (!quote) return;
-            if (!confirm('Mark this quote as declined?')) return;
-            quote.status = 'Declined';
-            saveData('quotes', quotes);
-            renderQuotes();
-            viewQuote(id);
-        }
-
-        // Convert accepted quote into a job
-        window.convertToJob = function(id) {
-            const quote = quotes.find(q => q.id == id);
-            if (!quote) return;
-            if (quote.status !== 'Accepted') {
-                alert('Only accepted quotes can be converted to jobs.');
-                return;
-            }
-            if (!confirm('Convert this accepted quote into a scheduled job?')) return;
-            const clientId = quote.clientId;
-            const description = quote.notes || 'Job from accepted quote';
-            const date = new Date().toISOString().slice(0, 10);
-            jobs.push({ id: generateId(), clientId, description, date, startTime: '', endTime: '', hours: null, status: 'Scheduled', photo: null });
-            saveData('jobs', jobs);
-            // update quote status to reflect conversion
-            quote.status = 'Converted to Job';
-            saveData('quotes', quotes);
-            renderJobs();
-            renderQuotes();
-            viewQuote(id);
-            alert('Job created from quote. You can manage it in the Jobs section.');
-        }
-
         // ------------------ Jobs ------------------
         function renderJobs() {
             const tbody = document.querySelector('#jobs-table tbody');
@@ -1400,6 +1328,36 @@
                     if (log.hours) totalJobHours += log.hours;
                 });
             }
+            // Compute total payroll from timelogs
+            let totalPayroll = 0;
+            if (typeof timelogs !== 'undefined' && timelogs.length > 0) {
+                timelogs.forEach(log => {
+                    if (log.pay) totalPayroll += parseFloat(log.pay) || 0;
+                });
+            }
+            // Invoice and expense summaries
+            const numInvoices = invoices ? invoices.length : 0;
+            let totalInvoiceRevenue = 0;
+            let paidInvoiceRevenue = 0;
+            let outstandingInvoiceRevenue = 0;
+            if (invoices && invoices.length > 0) {
+                invoices.forEach(inv => {
+                    totalInvoiceRevenue += parseFloat(inv.total) || 0;
+                    if (inv.status === 'Paid') {
+                        paidInvoiceRevenue += parseFloat(inv.total) || 0;
+                    } else {
+                        outstandingInvoiceRevenue += parseFloat(inv.total) || 0;
+                    }
+                });
+            }
+            let totalExpenses = 0;
+            if (expenses && expenses.length > 0) {
+                expenses.forEach(exp => {
+                    totalExpenses += parseFloat(exp.amount) || 0;
+                });
+            }
+            const profitBeforePayroll = totalInvoiceRevenue - totalExpenses;
+            const profitAfterPayroll = totalInvoiceRevenue - totalExpenses - totalPayroll;
             let html = '';
             html += `<p><strong>Total Clients:</strong> ${numClients}</p>`;
             html += `<p><strong>Total Quotes:</strong> ${numQuotes}</p>`;
@@ -1407,6 +1365,14 @@
             html += `<p><strong>Average Quote Value:</strong> $${avgQuote.toFixed(2)}</p>`;
             html += `<p><strong>Total Jobs:</strong> ${numJobs}</p>`;
             html += `<p><strong>Total Hours Logged:</strong> ${totalJobHours.toFixed(2)}</p>`;
+            html += `<p><strong>Total Payroll (Time Logs):</strong> $${totalPayroll.toFixed(2)}</p>`;
+            html += `<p><strong>Total Invoices:</strong> ${numInvoices}</p>`;
+            html += `<p><strong>Total Invoice Revenue:</strong> $${totalInvoiceRevenue.toFixed(2)}</p>`;
+            html += `<p><strong>Paid Invoice Revenue:</strong> $${paidInvoiceRevenue.toFixed(2)}</p>`;
+            html += `<p><strong>Outstanding Invoice Revenue:</strong> $${outstandingInvoiceRevenue.toFixed(2)}</p>`;
+            html += `<p><strong>Total Expenses:</strong> $${totalExpenses.toFixed(2)}</p>`;
+            html += `<p><strong>Profit (Revenue - Expenses):</strong> $${profitBeforePayroll.toFixed(2)}</p>`;
+            html += `<p><strong>Profit after Payroll:</strong> $${profitAfterPayroll.toFixed(2)}</p>`;
             container.innerHTML = html;
         }
 
@@ -1511,51 +1477,10 @@
             tbody.innerHTML = '';
             employees.forEach(emp => {
                 const tr = document.createElement('tr');
-                // format the pay rate to two decimals if it exists
-                const rate = (emp.payRate != null && !isNaN(emp.payRate)) ? parseFloat(emp.payRate).toFixed(2) : '';
-                // Determine first and last names. Support legacy 'name' property by splitting it.
-                let firstName = emp.firstName || '';
-                let lastName = emp.lastName || '';
-                if (!firstName && !lastName && emp.name) {
-                    const parts = emp.name.trim().split(' ');
-                    firstName = parts[0] || '';
-                    lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
-                }
-                // calculate total hours worked by this employee during the current week
-                let totalHours = 0;
-                if (Array.isArray(timelogs) && timelogs.length > 0) {
-                    const today = new Date();
-                    // determine start of current week (Monday). 0=Sun,1=Mon,...6=Sat
-                    const dayOfWeek = today.getDay();
-                    // number of days to subtract to get Monday
-                    const diff = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-                    const weekStart = new Date(today);
-                    weekStart.setDate(today.getDate() - diff);
-                    weekStart.setHours(0, 0, 0, 0);
-                    timelogs.forEach(log => {
-                        if (log.employeeId === emp.id && log.hours != null && !isNaN(log.hours)) {
-                            // compare log.date (YYYY-MM-DD) with weekStart
-                            const logDate = new Date(log.date);
-                            if (!isNaN(logDate.getTime()) && logDate >= weekStart) {
-                                totalHours += parseFloat(log.hours);
-                            }
-                        }
-                    });
-                }
-                const totalHoursDisplay = totalHours > 0 ? totalHours.toFixed(2) : '';
-                // calculate total pay for the week
-                let totalPay = '';
-                if (emp.payRate != null && !isNaN(emp.payRate) && totalHours > 0) {
-                    const pay = parseFloat(emp.payRate) * totalHours;
-                    totalPay = pay.toFixed(2);
-                }
                 tr.innerHTML = `
-                    <td>${firstName}</td>
-                    <td>${lastName}</td>
+                    <td>${emp.name}</td>
                     <td>${emp.role || ''}</td>
-                    <td>${rate}</td>
-                    <td>${totalHoursDisplay}</td>
-                    <td>${totalPay}</td>
+                    <td>${emp.hourlyRate != null ? parseFloat(emp.hourlyRate).toFixed(2) : ''}</td>
                     <td class="actions">
                         <button class="secondary" onclick="editEmployee(${emp.id})">Edit</button>
                         <button class="secondary" onclick="deleteEmployee(${emp.id})">Delete</button>
@@ -1573,16 +1498,7 @@
             employees.forEach(emp => {
                 const opt = document.createElement('option');
                 opt.value = emp.id;
-                // Build display name from first and last names if present
-                let firstName = emp.firstName || '';
-                let lastName = emp.lastName || '';
-                if (!firstName && !lastName && emp.name) {
-                    const parts = emp.name.trim().split(' ');
-                    firstName = parts[0] || '';
-                    lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
-                }
-                const fullName = `${firstName} ${lastName}`.trim();
-                opt.textContent = fullName;
+                opt.textContent = emp.name;
                 select.appendChild(opt);
             });
         }
@@ -1591,41 +1507,23 @@
         document.getElementById('employee-form').addEventListener('submit', function(e) {
             e.preventDefault();
             const idField = document.getElementById('employee-id');
-            const firstName = document.getElementById('employee-firstname').value.trim();
-            const lastName = document.getElementById('employee-lastname').value.trim();
+            const name = document.getElementById('employee-name').value.trim();
             const role = document.getElementById('employee-role').value.trim();
-            // retrieve pay rate input and convert to number. Empty string yields NaN.
-            let payRateVal = document.getElementById('employee-payrate').value;
-            payRateVal = payRateVal === '' ? null : parseFloat(payRateVal);
-            if (!firstName || !lastName) return;
+            const rateVal = parseFloat(document.getElementById('employee-rate').value);
+            const rate = isNaN(rateVal) ? 0 : rateVal;
+            if (!name) return;
             if (idField.value) {
                 const emp = employees.find(emp => emp.id == idField.value);
                 if (emp) {
-                    emp.firstName = firstName;
-                    emp.lastName = lastName;
-                    // maintain a combined name property for backwards compatibility
-                    emp.name = `${firstName} ${lastName}`.trim();
+                    emp.name = name;
                     emp.role = role;
-                    emp.payRate = payRateVal;
+                    emp.hourlyRate = rate;
                 }
             } else {
-                employees.push({
-                    id: generateId(),
-                    firstName,
-                    lastName,
-                    // maintain a combined name property for backwards compatibility
-                    name: `${firstName} ${lastName}`.trim(),
-                    role,
-                    payRate: payRateVal
-                });
+                employees.push({ id: generateId(), name, role, hourlyRate: rate });
             }
             saveData('employees', employees);
-            // re-render lists after employee changes
             renderEmployees();
-            // update time logs display names when employee data changes
-            if (typeof renderTimeLogs === 'function') {
-                renderTimeLogs();
-            }
             this.reset();
             idField.value = '';
             document.getElementById('cancel-employee-btn').classList.add('hidden');
@@ -1634,8 +1532,6 @@
         document.getElementById('cancel-employee-btn').addEventListener('click', function() {
             document.getElementById('employee-form').reset();
             document.getElementById('employee-id').value = '';
-            // clear pay rate field when cancelling edit
-            document.getElementById('employee-payrate').value = '';
             this.classList.add('hidden');
         });
 
@@ -1643,23 +1539,10 @@
             const emp = employees.find(emp => emp.id == id);
             if (!emp) return;
             document.getElementById('employee-id').value = emp.id;
-            // Prefill first and last name fields. If first/last not stored, split the name.
-            let firstName = emp.firstName || '';
-            let lastName = emp.lastName || '';
-            if (!firstName && !lastName && emp.name) {
-                const parts = emp.name.trim().split(' ');
-                firstName = parts[0] || '';
-                lastName = parts.length > 1 ? parts.slice(1).join(' ') : '';
-            }
-            document.getElementById('employee-firstname').value = firstName;
-            document.getElementById('employee-lastname').value = lastName;
+            document.getElementById('employee-name').value = emp.name;
             document.getElementById('employee-role').value = emp.role || '';
-            // set the pay rate input when editing
-            if (emp.payRate != null && !isNaN(emp.payRate)) {
-                document.getElementById('employee-payrate').value = parseFloat(emp.payRate).toFixed(2);
-            } else {
-                document.getElementById('employee-payrate').value = '';
-            }
+            // Populate hourly rate when editing
+            document.getElementById('employee-rate').value = (emp.hourlyRate != null ? emp.hourlyRate : '');
             document.getElementById('cancel-employee-btn').classList.remove('hidden');
         }
 
@@ -1688,7 +1571,7 @@
                 return;
             }
             const now = new Date();
-            timelogs.push({ id: generateId(), employeeId: empId, date: now.toISOString().slice(0,10), clockIn: now.toISOString(), clockOut: null, hours: null });
+            timelogs.push({ id: generateId(), employeeId: empId, date: now.toISOString().slice(0,10), clockIn: now.toISOString(), clockOut: null, hours: null, pay: null });
             saveData('timelogs', timelogs);
             renderTimeLogs();
         });
@@ -1710,6 +1593,10 @@
             const start = new Date(open.clockIn);
             const diffMs = now - start;
             open.hours = diffMs / (1000 * 60 * 60);
+            // Compute pay based on employee hourly rate
+            const emp = employees.find(e => e.id == empId);
+            const rateVal = emp ? parseFloat(emp.hourlyRate) || 0 : 0;
+            open.pay = (open.hours ? open.hours : 0) * rateVal;
             saveData('timelogs', timelogs);
             renderTimeLogs();
         });
@@ -1723,28 +1610,13 @@
                 const tr = document.createElement('tr');
                 const ci = log.clockIn ? new Date(log.clockIn) : null;
                 const co = log.clockOut ? new Date(log.clockOut) : null;
-                // compute pay using employee's pay rate if available
-                let pay = '';
-                if (emp && emp.payRate != null && !isNaN(emp.payRate) && log.hours != null && !isNaN(log.hours)) {
-                    const total = parseFloat(emp.payRate) * parseFloat(log.hours);
-                    pay = total.toFixed(2);
-                }
-                // build employee display name from first/last names if available
-                let empFirst = emp && emp.firstName ? emp.firstName : '';
-                let empLast = emp && emp.lastName ? emp.lastName : '';
-                if ((!empFirst && !empLast) && emp && emp.name) {
-                    const parts = emp.name.trim().split(' ');
-                    empFirst = parts[0] || '';
-                    empLast = parts.length > 1 ? parts.slice(1).join(' ') : '';
-                }
-                const displayName = (empFirst + ' ' + empLast).trim();
                 tr.innerHTML = `
-                    <td>${displayName}</td>
+                    <td>${emp ? emp.name : ''}</td>
                     <td>${log.date}</td>
                     <td>${ci ? ci.toLocaleTimeString() : ''}</td>
                     <td>${co ? co.toLocaleTimeString() : ''}</td>
-                    <td>${(log.hours != null && !isNaN(log.hours)) ? log.hours.toFixed(2) : ''}</td>
-                    <td>${pay}</td>
+                    <td>${log.hours ? log.hours.toFixed(2) : ''}</td>
+                    <td>${log.pay != null ? parseFloat(log.pay).toFixed(2) : ''}</td>
                     <td class="actions">
                         <button class="secondary" onclick="editTimeLog(${log.id})">Edit</button>
                         <button class="secondary" onclick="deleteTimeLog(${log.id})">Delete</button>
@@ -1753,12 +1625,6 @@
                 tbody.appendChild(tr);
             });
             updateClockEmployeeSelect();
-
-            // re-render employees to update weekly totals after time logs change
-            // ensure the function exists before calling
-            if (typeof renderEmployees === 'function') {
-                renderEmployees();
-            }
         }
 
         window.deleteTimeLog = function(id) {
@@ -1821,6 +1687,10 @@
                         log.hours = (endDate - startDate) / (1000 * 60 * 60);
                     }
                 }
+                // compute pay based on employee hourly rate
+                const emp = employees.find(e => e.id == log.employeeId);
+                const rateVal = emp ? parseFloat(emp.hourlyRate) || 0 : 0;
+                log.pay = (log.hours ? log.hours : 0) * rateVal;
                 saveData('timelogs', timelogs);
                 renderTimeLogs();
             }
@@ -1918,6 +1788,357 @@
             }
         }
 
+        // ------------------ Invoices ------------------
+        // Render invoices list in the invoices table
+        function renderInvoices() {
+            const tbody = document.querySelector('#invoices-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            invoices.forEach((inv, idx) => {
+                const client = clients.find(c => c.id == inv.clientId);
+                const row = document.createElement('tr');
+                const dateStr = inv.date ? inv.date : '';
+                const totalStr = inv.total != null ? `$${parseFloat(inv.total).toFixed(2)}` : '$0.00';
+                row.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${dateStr}</td>
+                    <td>${client ? client.name : ''}</td>
+                    <td>${totalStr}</td>
+                    <td>${inv.status || 'Unpaid'}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="viewInvoice(${inv.id})">View</button>
+                        <button class="secondary" onclick="editInvoice(${inv.id})">Edit</button>
+                        <button class="secondary" onclick="deleteInvoice(${inv.id})">Delete</button>
+                    </td>`;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Show invoice form for creating or editing
+        function showInvoiceForm(invoice) {
+            const form = document.getElementById('invoice-form');
+            form.reset();
+            document.getElementById('invoice-id').value = '';
+            document.getElementById('invoice-items').innerHTML = '';
+            document.getElementById('invoice-total').textContent = 'Total: $0.00';
+            // Populate client select from clients
+            const clientSelect = document.getElementById('invoice-client');
+            if (clientSelect) {
+                clientSelect.innerHTML = '<option value="">Select client</option>';
+                clients.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.id;
+                    opt.textContent = c.name;
+                    clientSelect.appendChild(opt);
+                });
+            }
+            if (invoice) {
+                // Editing existing invoice
+                document.getElementById('invoice-id').value = invoice.id;
+                document.getElementById('invoice-client').value = invoice.clientId;
+                document.getElementById('invoice-date').value = invoice.date || '';
+                document.getElementById('invoice-due').value = invoice.dueDate || '';
+                document.getElementById('invoice-notes').value = invoice.notes || '';
+                // Add each existing item row
+                if (invoice.items && invoice.items.length > 0) {
+                    invoice.items.forEach(item => {
+                        addInvoiceItemRow(item.serviceId, item.quantity);
+                    });
+                } else {
+                    addInvoiceItemRow();
+                }
+                updateInvoiceTotal();
+            } else {
+                // New invoice: set date to today and at least one row
+                const today = new Date().toISOString().slice(0, 10);
+                document.getElementById('invoice-date').value = today;
+                document.getElementById('invoice-due').value = '';
+                addInvoiceItemRow();
+            }
+            document.getElementById('invoice-modal').classList.remove('hidden');
+            document.getElementById('invoice-view').classList.add('hidden');
+        }
+
+        // Add a line item row to the invoice form
+        function addInvoiceItemRow(serviceId = '', quantity = 1) {
+            const container = document.getElementById('invoice-items');
+            const row = document.createElement('div');
+            row.className = 'invoice-item-row';
+            row.style.display = 'flex';
+            row.style.gap = '0.5rem';
+            row.style.marginTop = '0.5rem';
+            // Service select
+            const serviceSelect = document.createElement('select');
+            serviceSelect.style.flex = '2';
+            serviceSelect.innerHTML = '<option value="">Select service</option>';
+            services.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.id;
+                opt.textContent = `${s.name} ($${s.price.toFixed(2)})`;
+                if (s.id == serviceId) opt.selected = true;
+                serviceSelect.appendChild(opt);
+            });
+            // Quantity input
+            const qtyInput = document.createElement('input');
+            qtyInput.type = 'number';
+            qtyInput.min = '1';
+            qtyInput.step = '1';
+            qtyInput.value = quantity;
+            qtyInput.style.flex = '1';
+            // Remove button
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.textContent = 'Remove';
+            removeBtn.className = 'secondary';
+            removeBtn.style.flex = '1';
+            removeBtn.addEventListener('click', () => {
+                container.removeChild(row);
+                updateInvoiceTotal();
+            });
+            // Update total on change
+            serviceSelect.addEventListener('change', updateInvoiceTotal);
+            qtyInput.addEventListener('input', updateInvoiceTotal);
+            // Assemble row
+            row.appendChild(serviceSelect);
+            row.appendChild(qtyInput);
+            row.appendChild(removeBtn);
+            container.appendChild(row);
+        }
+
+        // Compute invoice total based on items
+        function updateInvoiceTotal() {
+            const rows = document.querySelectorAll('#invoice-items .invoice-item-row');
+            let total = 0;
+            rows.forEach(row => {
+                const svcId = row.querySelector('select').value;
+                const qty = parseInt(row.querySelector('input').value) || 0;
+                const service = services.find(s => s.id == svcId);
+                if (service && qty > 0) {
+                    total += service.price * qty;
+                }
+            });
+            document.getElementById('invoice-total').textContent = `Total: $${total.toFixed(2)}`;
+        }
+
+        // Save invoice (create or update)
+        document.getElementById('invoice-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idField = document.getElementById('invoice-id');
+            const clientIdVal = parseInt(document.getElementById('invoice-client').value);
+            if (!clientIdVal) {
+                alert('Please select a client');
+                return;
+            }
+            const invoiceDate = document.getElementById('invoice-date').value || new Date().toISOString().slice(0, 10);
+            const dueDate = document.getElementById('invoice-due').value;
+            const notes = document.getElementById('invoice-notes').value.trim();
+            // Gather items
+            const itemRows = document.querySelectorAll('#invoice-items .invoice-item-row');
+            const items = [];
+            itemRows.forEach(row => {
+                const svcId = parseInt(row.querySelector('select').value);
+                const qty = parseInt(row.querySelector('input').value) || 0;
+                if (svcId && qty > 0) {
+                    items.push({ serviceId: svcId, quantity: qty });
+                }
+            });
+            if (items.length === 0) {
+                alert('Please add at least one service to the invoice');
+                return;
+            }
+            // Calculate total
+            let total = 0;
+            items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                total += service.price * item.quantity;
+            });
+            if (idField.value) {
+                // Update existing invoice
+                const inv = invoices.find(inv => inv.id == idField.value);
+                if (inv) {
+                    inv.clientId = clientIdVal;
+                    inv.date = invoiceDate;
+                    inv.dueDate = dueDate;
+                    inv.items = items;
+                    inv.notes = notes;
+                    inv.total = total;
+                }
+            } else {
+                const newId = generateId();
+                invoices.push({
+                    id: newId,
+                    clientId: clientIdVal,
+                    date: invoiceDate,
+                    dueDate: dueDate,
+                    items: items,
+                    notes: notes,
+                    total: total,
+                    status: 'Unpaid'
+                });
+            }
+            saveData('invoices', invoices);
+            renderInvoices();
+            document.getElementById('invoice-modal').classList.add('hidden');
+        });
+
+        // Cancel invoice editing
+        document.getElementById('cancel-invoice-btn').addEventListener('click', function() {
+            document.getElementById('invoice-modal').classList.add('hidden');
+        });
+
+        // Add new invoice button
+        document.getElementById('new-invoice-btn').addEventListener('click', function() {
+            showInvoiceForm();
+        });
+
+        document.getElementById('add-invoice-item-btn').addEventListener('click', function() {
+            addInvoiceItemRow();
+        });
+
+        // View invoice details
+        window.viewInvoice = function(id) {
+            const inv = invoices.find(inv => inv.id == id);
+            if (!inv) return;
+            const client = clients.find(c => c.id == inv.clientId);
+            let html = '';
+            html += `<h3>Invoice Details</h3>`;
+            html += `<p><strong>Invoice Date:</strong> ${inv.date || ''}</p>`;
+            html += `<p><strong>Due Date:</strong> ${inv.dueDate || ''}</p>`;
+            html += `<p><strong>Client:</strong> ${client ? client.name : ''}</p>`;
+            html += `<p><strong>Status:</strong> ${inv.status || 'Unpaid'}</p>`;
+            html += `<table class="quote-items-table"><thead><tr><th>Service</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead><tbody>`;
+            inv.items.forEach(item => {
+                const service = services.find(s => s.id == item.serviceId);
+                if (service) {
+                    const lineTotal = service.price * item.quantity;
+                    html += `<tr><td>${service.name}</td><td>${item.quantity}</td><td>$${service.price.toFixed(2)}</td><td>$${lineTotal.toFixed(2)}</td></tr>`;
+                }
+            });
+            html += `</tbody></table>`;
+            html += `<p><strong>Notes:</strong> ${inv.notes || ''}</p>`;
+            html += `<p><strong>Total:</strong> $${parseFloat(inv.total).toFixed(2)}</p>`;
+            // Actions: Mark as Paid/Unpaid, Edit, Delete, Back
+            html += '<div class="actions">';
+            if (inv.status === 'Paid') {
+                html += `<button class="secondary" onclick="markInvoicePaid(${inv.id}, false)">Mark Unpaid</button>`;
+            } else {
+                html += `<button class="primary" onclick="markInvoicePaid(${inv.id}, true)">Mark Paid</button>`;
+            }
+            html += `<button class="secondary" onclick="editInvoice(${inv.id})">Edit</button>`;
+            html += `<button class="secondary" onclick="deleteInvoice(${inv.id})">Delete</button>`;
+            html += `<button class="secondary" onclick="backToInvoiceList()">Back to list</button>`;
+            html += '</div>';
+            const viewContainer = document.getElementById('invoice-view');
+            viewContainer.innerHTML = html;
+            viewContainer.classList.remove('hidden');
+            document.getElementById('invoice-modal').classList.add('hidden');
+        }
+
+        window.backToInvoiceList = function() {
+            document.getElementById('invoice-view').classList.add('hidden');
+        }
+
+        // Edit existing invoice
+        window.editInvoice = function(id) {
+            const inv = invoices.find(inv => inv.id == id);
+            if (!inv) return;
+            showInvoiceForm(inv);
+        }
+
+        // Delete invoice
+        window.deleteInvoice = function(id) {
+            if (!confirm('Delete this invoice?')) return;
+            invoices = invoices.filter(inv => inv.id != id);
+            saveData('invoices', invoices);
+            renderInvoices();
+            // hide view if visible
+            document.getElementById('invoice-view').classList.add('hidden');
+        }
+
+        // Toggle paid/unpaid status
+        window.markInvoicePaid = function(id, paid) {
+            const inv = invoices.find(inv => inv.id == id);
+            if (!inv) return;
+            inv.status = paid ? 'Paid' : 'Unpaid';
+            // Optionally record paidDate when marking paid
+            if (paid) inv.paidDate = new Date().toISOString().slice(0,10);
+            saveData('invoices', invoices);
+            renderInvoices();
+            viewInvoice(id);
+        }
+
+        // ------------------ Expenses ------------------
+        // Render expense list
+        function renderExpenses() {
+            const tbody = document.querySelector('#expenses-table tbody');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            expenses.forEach(exp => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${exp.date || ''}</td>
+                    <td>${exp.description}</td>
+                    <td>$${parseFloat(exp.amount).toFixed(2)}</td>
+                    <td class="actions">
+                        <button class="secondary" onclick="editExpense(${exp.id})">Edit</button>
+                        <button class="secondary" onclick="deleteExpense(${exp.id})">Delete</button>
+                    </td>`;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // Expense form submission
+        document.getElementById('expense-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const idField = document.getElementById('expense-id');
+            const date = document.getElementById('expense-date').value;
+            const description = document.getElementById('expense-description').value.trim();
+            const amountVal = parseFloat(document.getElementById('expense-amount').value);
+            const amount = isNaN(amountVal) ? 0 : amountVal;
+            if (!date || !description) return;
+            if (idField.value) {
+                const exp = expenses.find(e => e.id == idField.value);
+                if (exp) {
+                    exp.date = date;
+                    exp.description = description;
+                    exp.amount = amount;
+                }
+            } else {
+                expenses.push({ id: generateId(), date, description, amount });
+            }
+            saveData('expenses', expenses);
+            renderExpenses();
+            this.reset();
+            document.getElementById('expense-id').value = '';
+            document.getElementById('cancel-expense-btn').classList.add('hidden');
+        });
+
+        // Edit expense
+        window.editExpense = function(id) {
+            const exp = expenses.find(e => e.id == id);
+            if (!exp) return;
+            document.getElementById('expense-id').value = exp.id;
+            document.getElementById('expense-date').value = exp.date;
+            document.getElementById('expense-description').value = exp.description;
+            document.getElementById('expense-amount').value = exp.amount;
+            document.getElementById('cancel-expense-btn').classList.remove('hidden');
+        }
+
+        // Cancel editing expense
+        document.getElementById('cancel-expense-btn').addEventListener('click', function() {
+            document.getElementById('expense-form').reset();
+            document.getElementById('expense-id').value = '';
+            this.classList.add('hidden');
+        });
+
+        // Delete expense
+        window.deleteExpense = function(id) {
+            if (!confirm('Delete this expense?')) return;
+            expenses = expenses.filter(e => e.id != id);
+            saveData('expenses', expenses);
+            renderExpenses();
+        }
+
         // Initial rendering
         renderClients();
         renderServices();
@@ -1929,6 +2150,9 @@
         // Render tasks and leads by default to ensure data loaded
         renderTasks();
         renderLeads();
+        // Render invoices and expenses on initial load
+        renderInvoices();
+        renderExpenses();
     </script>
 </body>
 </html>
