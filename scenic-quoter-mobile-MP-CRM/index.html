@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang='en'><head><meta charset='utf-8'><meta name='viewport' content='width=device-width, initial-scale=1, viewport-fit=cover'>
+<title>Scenic Roots – Quoter (Mobile)</title><link rel='manifest' href='manifest.json'><meta name='theme-color' content='#1e7f4b'>
+<!-- styles, UI, CRM, scheduling, min-margin alert are inside this single file build -->
+<style>
+:root{--b:#1e7f4b;--g:#e5e7eb;--m:#64748b;--txt:#0f172a;--bg:#f8fafc;--warn:#dc2626}
+*{box-sizing:border-box}html,body{height:100%}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:var(--txt);background:var(--bg)}
+.safe{height:env(safe-area-inset-top)}header{position:fixed;top:0;left:0;right:0;z-index:30;background:#fff;border-bottom:1px solid var(--g)}
+.brand{display:flex;align-items:center;gap:10px;padding:10px 12px}.brand strong{font-size:18px}.badge{font-size:12px;background:#e8f5ee;color:#065f46;padding:4px 8px;border-radius:999px}
+.toolbar{display:flex;gap:8px;overflow-x:auto;padding:6px 12px 10px}.toolbar::-webkit-scrollbar{display:none}
+button{border:0;background:var(--b);color:#fff;border-radius:10px;padding:10px 12px;font-weight:600;min-height:44px;white-space:nowrap}
+button.ghost{background:#fff;color:#0f172a;border:1px solid var(--g)}main{padding:calc(56px + env(safe-area-inset-top)) 10px 18px}
+section{background:#fff;border:1px solid var(--g);border-radius:14px;margin:10px 0;overflow:hidden}section>h3{margin:0;padding:10px 12px;background:#f1f5f9;border-bottom:1px solid var(--g);font-size:16px}
+.pad{padding:12px}label{font-size:12px;color:var(--m)}input,select,textarea{width:100%;padding:10px;border:1px solid var(--g);border-radius:10px;margin-top:4px;background:#fff;font-size:16px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:700px){.row{grid-template-columns:1fr}}table{width:100%;border-collapse:collapse}
+th,td{padding:8px;border-bottom:1px solid var(--g);font-size:14px}th{background:#f8fafc}.right{text-align:right}
+@media(max-width:700px){table thead{display:none}table tbody tr{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid var(--g);border-radius:10px;margin-bottom:10px;padding:8px}table tbody td{border:0;padding:0}table tbody td:nth-child(1){grid-column:1/3;color:#475569;font-weight:700}table tbody td:nth-child(2){grid-column:1/3}table tbody td:last-child{grid-column:1/3;justify-self:end}}
+#profitBar{height:10px;border-radius:6px;background:linear-gradient(90deg,#ef4444 0%,#f59e0b 50%,#22c55e 100%);position:relative;overflow:hidden;outline:2px solid transparent}
+#profitNeedle{height:100%;width:2px;background:#0f172a;position:absolute;top:0}.kpi{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}.kpi .pill{background:#f1f5f9;border:1px solid var(--g);border-radius:999px;padding:6px 10px;font-size:12px}
+.catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}.catalog-item{border:1px solid var(--g);border-radius:12px;padding:10px}.catalog-item h4{margin:0 0 6px 0;font-size:15px}.catalog-item .meta{font-size:12px;color:#475569}
+#proposal{display:none;padding:12px;max-width:900px;margin:0 auto}#proposal .line{display:flex;justify-content:space-between;border-bottom:1px dashed var(--g);padding:6px 0}
+.option-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}.card{border:1px solid var(--g);border-radius:12px;padding:10px}#annotator,#sigPad{max-width:100%}
+.toast{position:fixed;left:12px;right:12px;bottom:12px;background:#111;color:#fff;border-radius:12px;padding:10px 12px;display:none;z-index:50}.toast.warn{background:var(--warn)}
+.crm-list{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.crm-item{border:1px solid var(--g);border-radius:10px;padding:8px}.crm-actions{display:flex;gap:6px;margin-top:6px}
+</style>
+<script>if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js'))}</script>
+</head>
+<body>
+<div class='safe'></div>
+<header>
+  <div class='brand'><strong>Scenic Roots – Quoter</strong> <span class='badge'>MOBILE</span></div>
+  <div class='toolbar'>
+    <button id='toggleProposal' class='ghost'>Client Proposal</button>
+    <button id='saveLocal' class='ghost'>Save</button>
+    <button id='exportCsv' class='ghost'>Export CSV</button>
+    <button id='emailQuote' class='ghost'>Email (Mail App)</button>
+    <button id='emailViaScript' class='ghost'>Email via Script</button>
+    <button id='exportPng' class='ghost'>Export PNG</button>
+    <button onclick='window.print()' class='ghost'>Export PDF</button>
+  </div>
+</header>
+
+<div id='toast' class='toast'></div>
+
+<main>
+  <section><h3>Branding, Business & Integrations</h3><div class='pad'>
+    <div class='row'><div><label>Business</label><input id='bizName' value='Scenic Roots Lawn Care & Landscaping'></div><div><label>Prepared By</label><input id='preparedBy' value='Jay'></div></div>
+    <div class='row'><div><label>Phone</label><input id='phone' value='615-308-8477'></div><div><label>Email</label><input id='email' value='info@scenicroots.net'></div></div>
+    <div class='row'><div><label>Client Email (for scripted send)</label><input id='clientEmail' placeholder='client@example.com'></div><div><label>Website</label><input id='website' value='scenicroots.net'></div></div>
+    <div class='row'><div><label>Primary Color</label><input id='primaryColor' type='color' value='#1e7f4b'></div><div><label>Upload Logo</label><input id='logoInput' type='file' accept='image/*'></div></div>
+    <div class='row'><div><label>Payment URL (for QR)</label><input id='payUrl' placeholder='https://pay.link/your-checkout'></div><div><label>Sheet Sync URL (Apps Script)</label><input id='sheetUrl' placeholder='https://script.google.com/macros/s/WEB-APP-ID/exec'></div></div>
+    <div class='row'><div><label>Calendar URL (Apps Script)</label><input id='calUrl' placeholder='https://script.google.com/macros/s/CALENDAR-WEB-APP/exec'></div><div><label>Min Margin Alert %</label><input id='minMargin' type='number' step='0.1' value='18'></div></div>
+  </div></section>
+
+  <section><h3>Client Mini‑CRM</h3><div class='pad'>
+    <div class='row'><div><label>Client</label><input id='client' placeholder='Name'></div><div><label>Address</label><input id='address' placeholder='Street, City'></div></div>
+    <div class='row'><div><label>Phone</label><input id='clientPhone' placeholder='(555) 555-5555'></div><div><label>Email</label><input id='clientEmail2' placeholder='client@example.com'></div></div>
+    <div class='crm-actions'><button id='crmSave' class='ghost'>Save to Contacts</button><button id='crmNew' class='ghost'>New Contact</button></div>
+    <div id='crmList' class='crm-list'></div>
+  </div></section>
+
+  <section><h3>Job & Pricing</h3><div class='pad'>
+    <div class='row'><div><label>Job Name</label><input id='jobName'></div><div><label>Date</label><input id='jobDate' type='date'></div></div>
+    <div class='row'><div><label>Quote #</label><input id='quoteNo' readonly></div><div><label>Status</label><select id='status'><option>Draft</option><option>Sent</option><option>Accepted</option><option>Scheduled</option><option>Completed</option><option>Lost</option></select></div></div>
+    <div class='row'><div><label>Blended Crew Rate $/hr</label><input id='blended' type='number' step='0.01' value='55'></div><div><label>Target Profit %</label><input id='targetProfit' type='number' step='0.1' value='25'></div></div>
+    <div class='row'><div><label>Overhead %</label><input id='overhead' type='number' step='0.1' value='10'></div><div><label>Sales Tax %</label><input id='taxRate' type='number' step='0.1' value='0'></div></div>
+    <div class='row'><div><label>Tax Base</label><select id='taxBase'><option>Final</option><option>Materials Only</option><option>Materials + Labor</option></select></div>
+      <div><label>Rate Plan</label><select id='ratePlan'><option value='one_time' selected>One-Time Job (0%)</option><option value='recurring'>Recurring Customer (10%)</option><option value='existing_customer'>Existing Customer (15%)</option></select></div></div>
+    <div class='row'><div><label>Override Discount ($ or %)</label><input id='discount' placeholder='e.g. 50 or 10%'></div><div><label>Deposit ($ or %)</label><input id='deposit' placeholder='e.g. 200 or 25%'></div></div>
+    <div class='row'><div><label>Notes (mic to dictate)</label><div style='display:flex;gap:6px'><textarea id='notes' rows='2' placeholder='Internal note'></textarea><button id='startDictate' class='ghost'>🎤</button></div></div><div></div></div>
+  </div></section>
+
+  <section><h3>Lines & Profit Analyzer</h3><div class='pad'>
+    <div class='row'>
+      <div style='display:flex;gap:6px;flex-wrap:wrap'><button id='addLine' class='ghost'>Add Blank Line</button><button id='clearLines' class='ghost'>Clear Lines</button></div>
+      <div><div class='kpi' style='margin-top:0'><div class='pill'>Margin: <span id='kpiMargin'>--%</span></div><div class='pill'>COGS: <span id='kpiCogs'>$0</span></div><div class='pill'>Overhead: <span id='kpiOh'>$0</span></div><div class='pill'>Profit $: <span id='kpiProfit'>$0</span></div></div><div id='profitBar'><div id='profitNeedle' style='left:0%'></div></div></div>
+    </div>
+    <table id='lines'><thead><tr><th>#</th><th>Description</th><th>Unit</th><th class='right'>Qty</th><th class='right'>Unit Cost</th><th class='right'>Crew Hrs</th><th class='right'>Rate $/hr</th><th class='right'>Equip $</th><th class='right'>Taxable?</th><th class='right'>Line Total</th><th></th></tr></thead><tbody></tbody></table>
+  </div></section>
+
+  <section><h3>Quick Add: Catalog / Crews / Rentals</h3><div class='pad'>
+    <div class='tiny' style='margin-bottom:6px;color:#475569'>Tap an item to add it as a line. Edit prices anytime (saves locally).</div>
+    <h4>Material Catalog</h4><div id='catalog' class='catalog-grid'></div>
+    <details style='margin-top:8px'><summary>Edit Catalog JSON</summary><textarea id='catalogJson' rows='10' style='width:100%;font-family:ui-monospace,Consolas,monospace'></textarea>
+      <div style='margin-top:6px;display:flex;gap:8px'><button id='saveCatalog' class='ghost'>Save Catalog</button><button id='resetCatalog' class='ghost'>Reset to Defaults</button></div>
+    </details>
+    <div class='row' style='margin-top:12px'><div><h4>Crew Templates</h4><div id='crewBtns' style='display:flex;flex-wrap:wrap;gap:6px'></div></div><div><h4>Equipment Rentals</h4><div id='equipBtns' style='display:flex;flex-wrap:wrap;gap:6px'></div></div></div>
+  </div></section>
+
+  <section><h3>Calculators</h3><div class='pad'>
+    <div class='row'><div><label>Area (sq ft)</label><input id='area' type='number' step='0.01'></div><div><label>Depth (inches)</label><input id='depth' type='number' step='0.1'></div></div>
+    <div class='row'><div><label>Mulch/Soil (yards)</label><input id='yards' readonly></div><div><label>Rock (tons)</label><input id='tons' readonly></div></div>
+    <button id='addCalcLine' class='ghost'>Add Calc As Line</button>
+  </div></section>
+
+  <section><h3>Photos / Annotations / Terms</h3><div class='pad'>
+    <div class='row'><div><label>Upload Photos</label><input id='photos' type='file' accept='image/*' multiple><div id='thumbs' style='display:flex;gap:6px;margin-top:6px;flex-wrap:wrap'></div></div>
+      <div><label>Annotate (draw)</label><canvas id='annotator' width='800' height='450'></canvas>
+        <div style='display:flex;gap:6px;margin-top:6px'><button id='annoClear' class='ghost'>Clear</button><button id='annoUse' class='ghost'>Add Annotated to Photos</button></div>
+      </div></div>
+    <div class='row' style='margin-top:8px'><div><label>Terms</label><textarea id='terms' rows='4'>50% deposit to schedule; balance due upon completion. Proposal valid 15 days.</textarea></div>
+      <div><label>Payment QR</label><input id='payUrl2' placeholder='(optional) same as above if blank'><button id='makeQR' class='ghost' style='margin-top:6px'>Generate QR</button><canvas id='qrCanvas' width='180' height='180' style='border:1px solid var(--g);border-radius:8px;margin-top:6px'></canvas></div></div>
+  </div></section>
+
+  <section><h3>Client Options & Scheduling</h3><div class='pad'>
+    <div class='option-cards'><div class='card'><h4>Basic</h4><div id='optBasic'>$0.00</div><button class='ghost' onclick='chooseOption("Basic")'>Select Basic</button></div>
+      <div class='card'><h4>Target</h4><div id='optTarget'>$0.00</div><button class='ghost' onclick='chooseOption("Target")'>Select Target</button></div>
+      <div class='card'><h4>Premium</h4><div id='optPremium'>$0.00</div><button class='ghost' onclick='chooseOption("Premium")'>Select Premium</button></div></div>
+    <div class='row' style='margin-top:8px'><div><label>Basic % of base</label><input id='pctBasic' type='number' step='1' value='90'></div><div><label>Target % of base</label><input id='pctTarget' type='number' step='1' value='100'></div></div>
+    <div class='row'><div><label>Premium % of base</label><input id='pctPremium' type='number' step='1' value='120'></div>
+      <div style='display:flex;align-items:flex-end;gap:8px;flex-wrap:wrap'><span style='font-size:12px;color:#475569'>Select an option then create a calendar event when the job is accepted.</span><button id='scheduleBtn' class='ghost'>Create Calendar Event</button></div></div>
+  </div></section>
+</main>
+
+<div id='proposal'>
+  <h1>Client Proposal</h1>
+  <div class='line'><strong>Client</strong><span id='pClient'></span></div>
+  <div class='line'><strong>Property</strong><span id='pAddr'></span></div>
+  <div class='line'><strong>Job</strong><span id='pJob'></span></div>
+  <div class='line'><strong>Date</strong><span id='pDate'></span></div>
+  <div class='line'><strong>Quote #</strong><span id='pQ'></span></div>
+  <div class='line'><strong>Contact</strong><span id='pContact'></span></div>
+  <div class='line'><strong>Selected Option</strong><span id='pOption'></span></div>
+  <h2>Investment</h2><div id='investment'></div>
+  <h2>Payment</h2><div class='row'><div><div style='font-size:12px;color:#475569'>Scan to pay deposit</div><canvas id='pQR' width='180' height='180' style='border:1px solid var(--g);border-radius:8px'></canvas></div></div>
+  <h2>Photos</h2><div id='pPhotos' style='display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px'></div>
+  <h2>Terms</h2><div id='pTerms'>50% deposit to schedule; balance due upon completion. Proposal valid 15 days.</div>
+  <h2>Client Signature</h2><canvas id='sigPad' width='800' height='160' style='border:1px dashed var(--g);border-radius:8px'></canvas><br><button id='clearSig' class='ghost'>Clear</button>
+  <div style='margin-top:12px'><button id='syncSheet' class='ghost'>Sync to Google Sheet</button></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+const money=n=>(isNaN(n)?0:n).toLocaleString(undefined,{style:'currency',currency:'USD'});
+function toast(msg, warn=false){ const t=$('#toast'); t.textContent=msg; t.className='toast'+(warn?' warn':''); t.style.display='block'; setTimeout(()=>t.style.display='none', 2500); }
+(function(){ const spacer=document.createElement('div'); const h=document.querySelector('header'); spacer.style.height=h.offsetHeight+'px'; document.body.insertBefore(spacer, document.body.firstChild); addEventListener('resize',()=>spacer.style.height=h.offsetHeight+'px'); })();
+
+function loadCRM(){ try{return JSON.parse(localStorage.getItem('srq_crm')||'[]')}catch(e){return []} }
+function saveCRM(list){ localStorage.setItem('srq_crm', JSON.stringify(list)); }
+function renderCRM(){ const list=loadCRM(); const box=$('#crmList'); box.innerHTML=''; if(!list.length){ const e=document.createElement('div'); e.textContent='No contacts yet.'; e.style.color='#64748b'; box.appendChild(e); return; } list.forEach((c,i)=>{ const d=document.createElement('div'); d.className='crm-item'; d.innerHTML=`<strong>${c.name||'Unnamed'}</strong><div style="font-size:12px;color:#475569">${c.phone||''} • ${c.email||''}</div><div style="font-size:12px;color:#475569">${c.address||''}</div>`; const actions=document.createElement('div'); actions.className='crm-actions'; const use=document.createElement('button'); use.className='ghost'; use.textContent='Use'; use.onclick=()=>{ $('#client').value=c.name||''; $('#clientPhone').value=c.phone||''; $('#clientEmail2').value=c.email||''; $('#address').value=c.address||''; toast('Filled client from CRM'); }; const edit=document.createElement('button'); edit.className='ghost'; edit.textContent='Edit'; edit.onclick=()=>{ const name=prompt('Name', c.name||''); const phone=prompt('Phone', c.phone||''); const email=prompt('Email', c.email||''); const address=prompt('Address', c.address||''); const list2=loadCRM(); list2[i]={name,phone,email,address}; saveCRM(list2); renderCRM(); }; const del=document.createElement('button'); del.className='ghost'; del.textContent='Delete'; del.onclick=()=>{ if(confirm('Delete contact?')){ const list3=loadCRM(); list3.splice(i,1); saveCRM(list3); renderCRM(); } }; actions.appendChild(use); actions.appendChild(edit); actions.appendChild(del); d.appendChild(actions); box.appendChild(d); }); }
+$('#crmSave').onclick=()=>{ const list=loadCRM(); const c={name:$('#client').value, phone:$('#clientPhone').value, email:$('#clientEmail2').value, address:$('#address').value}; if(!c.name){ toast('Enter a client name first', true); return; } const idx=list.findIndex(x=>x.name===c.name); if(idx>=0) list[idx]=c; else list.push(c); saveCRM(list); renderCRM(); toast('Saved to Contacts'); };
+$('#crmNew').onclick=()=>{ $('#client').value=''; $('#clientPhone').value=''; $('#clientEmail2').value=''; $('#address').value=''; toast('Ready for new contact'); };
+
+function addLine(d={}){ const tb=$('#lines tbody'); const i=tb.children.length+1; const tr=document.createElement('tr'); tr.innerHTML=`<td>${i}</td><td><input class="desc" value="${d.desc||''}"></td><td><input class="unit" value="${d.unit||''}" style="max-width:90px"></td><td class="right"><input class="qty" type="number" step="0.01" value="${d.qty??0}"></td><td class="right"><input class="uc" type="number" step="0.01" value="${d.uc??0}"></td><td class="right"><input class="hrs" type="number" step="0.01" value="${d.hrs??0}"></td><td class="right"><input class="rate" type="number" step="0.01" value="${d.rate??($('#blended').value||55)}"></td><td class="right"><input class="eq" type="number" step="0.01" value="${d.eq??0}"></td><td class="right"><input class="tax" type="checkbox" ${(d.tax??true)?'checked':''}></td><td class="right"><span class="lt">$0.00</span></td><td><button class="ghost del">✕</button></td>`; tb.appendChild(tr); tr.querySelectorAll('input').forEach(i=>i.addEventListener('input', calc)); tr.querySelector('.del').onclick=()=>{tr.remove(); [...$('#lines tbody').children].forEach((r,i)=>r.children[0].textContent=i+1); calc();}; calc(); }
+function parsePctOr$(v,base){v=(v||'').toString().trim(); if(!v) return 0; return v.endsWith('%')? (parseFloat(v)/100*base) : parseFloat(v);}
+function setNeedle(pct){ const n=Math.max(0,Math.min(100,pct)); const el=$('#profitNeedle'); if(el) el.style.left=n+'%'; }
+function updateKpis(marginPct, cogs, oh, profit$){ $('#kpiMargin').textContent = (isNaN(marginPct)?'--':(marginPct.toFixed(1)+'%')); $('#kpiCogs').textContent = money(cogs); $('#kpiOh').textContent = money(oh); $('#kpiProfit').textContent = money(profit$); }
+function calc(){ const rateBlended=+$('#blended').value||0, taxRate=(+$('#taxRate').value||0)/100; let mat=0, lab=0, eq=0; [...$('#lines tbody').children].forEach(tr=>{ const qty=+tr.querySelector('.qty').value||0, uc=+tr.querySelector('.uc').value||0; const hrs=+tr.querySelector('.hrs').value||0, rate=+tr.querySelector('.rate').value||rateBlended; const eq$=+tr.querySelector('.eq').value||0; const lt = qty*uc + hrs*rate + eq$; tr.querySelector('.lt').textContent=money(lt); mat += qty*uc; lab += hrs*rate; eq += eq$; }); const overhead = (+$('#overhead').value||0)/100 * (mat+lab); const cogs = mat+lab+eq+overhead; const targetProfitPct=(+$('#targetProfit').value||0)/100; const profit$ = targetProfitPct * (mat+lab+eq+overhead); let priceBefore = cogs + profit$; let discountRaw = $('#discount').value.trim(); const rp = $('#ratePlan').value; if(!discountRaw) discountRaw = (rp==='existing_customer')? '15%' : (rp==='recurring'? '10%' : ''); const disc = parsePctOr$(discountRaw, priceBefore); priceBefore = Math.max(0, priceBefore - (isNaN(disc)?0:disc)); let taxBase=priceBefore; const mode=$('#taxBase').value; if(mode==='Materials Only') taxBase = mat; if(mode==='Materials + Labor') taxBase = mat+lab; const tax = taxBase * taxRate; const totalDue = priceBefore + tax; const dep = parsePctOr$($('#deposit').value, totalDue); const revenue = priceBefore; const marginPct = revenue>0 ? ( (revenue - cogs) / revenue ) * 100 : NaN; const min = +($('#minMargin').value||0); const bar=$('#profitBar'); if(!isNaN(marginPct) && marginPct<min){ bar.style.outline='2px solid var(--warn)'; toast(`Margin ${marginPct.toFixed(1)}% is below ${min}%`, true); }else{ bar.style.outline='2px solid transparent'; } setNeedle(isNaN(marginPct)?0:Math.max(0,Math.min(100, marginPct))); updateKpis(marginPct, cogs, overhead, revenue - cogs); const b = +$('#pctBasic').value/100 * totalDue; const t = +$('#pctTarget').value/100 * totalDue; const p = +$('#pctPremium').value/100 * totalDue; $('#optBasic').textContent = money(b); $('#optTarget').textContent = money(t); $('#optPremium').textContent = money(p); const inv=$('#investment'); inv.innerHTML=''; const add=(k,v,em)=>{const d=document.createElement('div'); d.className='line'; d.innerHTML=`${em?'<strong>':''}<span>${k}</span><span>${money(v)}</span>${em?'</strong>':''}`; inv.appendChild(d);}; add('Estimated Investment (pre-tax)', priceBefore, true); add('Sales Tax', tax, false); add('Total Due (Target)', t, true); add('Deposit', dep, false); add('Balance After Deposit', Math.max(0, t-(isNaN(dep)?0:dep)), true); }
+$('#addLine').onclick=()=>addLine(); $('#clearLines').onclick=()=>{ $('#lines tbody').innerHTML=''; addLine(); calc(); };
+
+function updateCalcs(){ const area=+$('#area').value||0, depth=+$('#depth').value||0; const yards = area*(depth/12)/27; const tons = yards*1.3; $('#yards').value = yards.toFixed(2); $('#tons').value = tons.toFixed(2); }
+$('#area').addEventListener('input', updateCalcs); $('#depth').addEventListener('input', updateCalcs);
+$('#addCalcLine').onclick=()=>{ addLine({desc:`Area ${$('#area').value} sqft @ ${$('#depth').value}"`, unit:'yard', qty:+$('#yards').value||0, uc:80, hrs:0.25, rate:+$('#blended').value||55, tax:true}); };
+
+const DEFAULT_CATALOG=[{"name":"Lawn Mowing (up to ¼ acre)","unit":"job","uc":45,"tax":true},{"name":"Lawn Mowing (½ acre)","unit":"job","uc":65,"tax":true},{"name":"Mulch Installation (with barrier)","unit":"yard","uc":125,"tax":true},{"name":"Mulch Only (spread)","unit":"yard","uc":85,"tax":true},{"name":"Hedge Trimming","unit":"10 ft","uc":75,"tax":true},{"name":"Haul-Off/Debris Disposal","unit":"load","uc":95,"tax":false}];
+function loadCatalog(){ try{ return JSON.parse(localStorage.getItem('srq_catalog')) || DEFAULT_CATALOG; }catch(e){ return DEFAULT_CATALOG; } }
+function saveCatalog(c){ localStorage.setItem('srq_catalog', JSON.stringify(c)); }
+function renderCatalog(){ const cat = loadCatalog(); const grid = $('#catalog'); grid.innerHTML=''; cat.forEach((item, idx)=>{ const d=document.createElement('div'); d.className='catalog-item'; d.innerHTML = `<h4>${item.name}</h4><div class="meta">Unit: ${item.unit} • ${item.tax?'Taxable':'Non-taxable'}</div><div class="meta">${('uc'in item && item.uc>0)? 'Unit Cost: '+money(item.uc): 'Unit Cost: —'}</div><div style="margin-top:6px"><button class="ghost" data-idx="${idx}">Add</button></div>`; grid.appendChild(d); d.querySelector('button').onclick = ()=> addFromCatalog(idx); }); $('#catalogJson').value = JSON.stringify(cat, null, 2); }
+function addFromCatalog(idx){ const item = loadCatalog()[idx]; addLine({desc:item.name,unit:item.unit,qty:(item.unit==='hr'?1:0),uc:item.uc||0,hrs:item.hrs||0,rate:+$('#blended').value||55,eq:0,tax:(item.tax!==false)}); }
+$('#saveCatalog').onclick=()=>{ try{ saveCatalog(JSON.parse($('#catalogJson').value)); renderCatalog(); toast('Catalog saved.'); }catch(e){ toast('Invalid JSON', true); } };
+$('#resetCatalog').onclick=()=>{ saveCatalog(DEFAULT_CATALOG); renderCatalog(); toast('Catalog reset.'); };
+
+const CREWS=[{"name":"2-Man Crew","rate":40},{"name":"3-Man Crew (Lead+2)","rate":55},{"name":"4-Man Crew","rate":70}];
+function renderCrews(){ const box=$('#crewBtns'); box.innerHTML=''; CREWS.forEach(t=>{ const b=document.createElement('button'); b.className='ghost'; b.textContent=`${t.name} ($${t.rate}/hr)`; b.onclick=()=>{ $('#blended').value=t.rate; calc(); }; box.appendChild(b); }); }
+const RENTALS=[{"name":"Mini-Excavator Rental","unit":"day","uc":300,"tax":false},{"name":"Dump Trailer Rental","unit":"day","uc":120,"tax":false},{"name":"Skid Steer Rental","unit":"day","uc":250,"tax":false}];
+function renderEquip(){ const box=$('#equipBtns'); box.innerHTML=''; RENTALS.forEach(t=>{ const b=document.createElement('button'); b.className='ghost'; b.textContent=`${t.name} ($${t.uc}/${t.unit})`; b.onclick=()=> addLine({desc:t.name,unit:t.unit,qty:1,uc:t.uc,hrs:0,rate:+$('#blended').value||55,eq:0,tax:(t.tax!==false)}); box.appendChild(b); }); }
+
+$('#startDictate').onclick=()=>{ const n=window; const SR = n.SpeechRecognition || n.webkitSpeechRecognition; if(!SR){ toast('Speech recognition not supported on this device.', true); return; } const rec = new SR(); rec.lang='en-US'; rec.interimResults=false; rec.onresult=(e)=>{ const t=[...e.results].map(r=>r[0].transcript).join(' '); $('#notes').value = ($('#notes').value+' '+t).trim(); }; rec.start(); };
+
+function drawQR(text, canvasId){ const c=document.getElementById(canvasId); const x=c.getContext('2d'); x.clearRect(0,0,c.width,c.height); x.fillStyle='#fff'; x.fillRect(0,0,c.width,c.height); x.fillStyle='#000'; let h=0; for(let i=0;i<text.length;i++) h=(h*31 + text.charCodeAt(i))>>>0; const n=29, s=Math.floor(c.width/n); for(let r=0;r<n;r++) for(let col=0;col<n;col++){ const bit=((h>>((r+col)%24))&1) ^ ((r*col)%3==0?1:0); if(bit) x.fillRect(col*s,r*s,s-1,s-1); } }
+$('#makeQR').onclick=()=>{ const url=($('#payUrl2').value.trim()||$('#payUrl').value.trim()); if(!url){ toast('Enter a Payment URL first.', true); return; } drawQR(url,'qrCanvas'); drawQR(url,'pQR'); };
+
+let selectedOption='Target'; function chooseOption(name){ selectedOption=name; toast('Selected: '+name); }
+$('#toggleProposal').onclick=()=>{ calc(); $('#pClient').textContent=$('#client').value; $('#pAddr').textContent=$('#address').value; $('#pJob').textContent=$('#jobName').value; $('#pDate').textContent=$('#jobDate').value || new Date().toISOString().slice(0,10); $('#pQ').textContent=$('#quoteNo').value||''; $('#pContact').textContent = `${$('#website').value} • ${$('#phone').value} • ${$('#email').value}`; $('#pOption').textContent = selectedOption; $('#pTerms').textContent = $('#terms').value; $('#pPhotos').innerHTML=''; $('#thumbs').querySelectorAll('img').forEach(img=>{ const c=new Image(); c.src=img.src; c.style.width='100%'; c.style.border='1px solid #e5e7eb'; c.style.borderRadius='8px'; $('#pPhotos').appendChild(c); }); const p=$('#proposal'); p.style.display = (p.style.display==='block'?'none':'block'); scrollTo(0,0); };
+
+const pad=document.getElementById('sigPad'); const sctx=pad.getContext('2d'); let sd=false; sctx.lineWidth=2; sctx.strokeStyle='#111';
+function spos(e){const r=pad.getBoundingClientRect();const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top;return {x,y};}
+function sstart(e){sd=true;const p=spos(e);sctx.beginPath();sctx.moveTo(p.x,p.y);e.preventDefault();}
+function smove(e){if(!sd)return;const p=spos(e);sctx.lineTo(p.x,p.y);sctx.stroke();e.preventDefault();}
+function send(){sd=false;}
+pad.addEventListener('mousedown', sstart); pad.addEventListener('mousemove', smove); pad.addEventListener('mouseup', send); pad.addEventListener('mouseleave', send);
+pad.addEventListener('touchstart', sstart, {passive:false}); pad.addEventListener('touchmove', smove, {passive:false}); pad.addEventListener('touchend', send);
+document.getElementById('clearSig').onclick=()=> sctx.clearRect(0,0,pad.width,pad.height);
+
+function rowsToCsv(){ const rows=[['#','Description','Unit','Qty','UnitCost','CrewHrs','Rate','Equip','Taxable','LineTotal']]; [...$('#lines tbody').children].forEach(tr=>{ const t=[tr.children[0].textContent.trim(), tr.querySelector('.desc').value.replaceAll(',',' '), tr.querySelector('.unit').value, tr.querySelector('.qty').value, tr.querySelector('.uc').value, tr.querySelector('.hrs').value, tr.querySelector('.rate').value, tr.querySelector('.eq').value, tr.querySelector('.tax').checked?'Y':'N', tr.querySelector('.lt').textContent.replace(/[^0-9.\-]/g,'')]; rows.push(t); }); return rows.map(r=>r.join(',')).join('
+'); }
+function exportCsv(){ const blob=new Blob([rowsToCsv()],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=(($('#client').value||'quote')+'_quote.csv').replace(/[^a-z0-9\-_.]+/gi,'_'); a.click(); URL.revokeObjectURL(url); }
+$('#exportCsv').onclick=exportCsv;
+
+function buildPayload(){ calc(); const lines=[...$('#lines tbody').children].map(tr=>({ idx: tr.children[0].textContent.trim(), desc: tr.querySelector('.desc').value, unit: tr.querySelector('.unit').value, qty: parseFloat(tr.querySelector('.qty').value||0), unit_cost: parseFloat(tr.querySelector('.uc').value||0), crew_hrs: parseFloat(tr.querySelector('.hrs').value||0), rate: parseFloat(tr.querySelector('.rate').value||0), equip: parseFloat(tr.querySelector('.eq').value||0), taxable: tr.querySelector('.tax').checked, line_total: parseFloat(tr.querySelector('.lt').textContent.replace(/[^0-9.\-]/g,'')) })); const investment=[...$('#investment').querySelectorAll('.line')].map(d=>d.textContent.trim()); return { business: $('#bizName').value, prepared_by: $('#preparedBy').value, phone: $('#phone').value, email: $('#email').value, website: $('#website').value, client: $('#client').value, client_phone: $('#clientPhone').value, client_email: $('#clientEmail2').value, address: $('#address').value, job_name: $('#jobName').value, job_date: $('#jobDate').value, rate_plan: $('#ratePlan').value, discount: $('#discount').value, deposit: $('#deposit').value, overhead_pct: $('#overhead').value, profit_target_pct: $('#targetProfit').value, tax_rate_pct: $('#taxRate').value, tax_base: $('#taxBase').value, selected_option: (window.selectedOption||'Target'), min_margin_alert_pct: $('#minMargin').value, investment_lines: investment, terms: ($('#terms')?$('#terms').value:$('#pTerms').textContent), catalog_snapshot: (localStorage.getItem('srq_catalog')||null), quote_no: $('#quoteNo').value, status: $('#status').value, generated_at: new Date().toISOString(), lines }; }
+
+async function syncToSheet(payload){ const url = ($('#sheetUrl').value||'').trim(); if(!url){ toast('Enter your Apps Script Web App URL under "Sheet Sync URL".', true); return; } try{ const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); if(!res.ok) throw new Error('HTTP '+res.status); toast('Synced to Google Sheet'); }catch(err){ toast('Sync failed: '+err.message, true); } }
+document.getElementById('syncSheet').onclick=()=>syncToSheet(buildPayload());
+
+async function emailViaScript(){ const url = ($('#sheetUrl').value||'').trim(); const to = ($('#clientEmail').value||$('#clientEmail2').value||'').trim(); if(!url){ toast('Enter Apps Script Web App URL.', true); return; } if(!to){ toast('Enter Client Email.', true); return; } const payload = buildPayload(); payload.action='email'; payload.to=to; payload.quote_no=$('#quoteNo').value; try{ const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); if(!res.ok) throw new Error('HTTP '+res.status); toast('Email requested'); }catch(e){ toast('Email via script failed: '+e.message, true); } }
+$('#emailViaScript').onclick=emailViaScript;
+
+$('#scheduleBtn').onclick=async()=>{ if($('#status').value!=='Accepted'){ toast('Set Status to "Accepted" first.', true); return; } const url = ($('#calUrl').value||'').trim(); if(!url){ toast('Enter Calendar URL (Apps Script).', true); return; } const payload = buildPayload(); payload.action='calendar'; try{ const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}); if(!res.ok) throw new Error('HTTP '+res.status); toast('Calendar event created (requested)'); }catch(e){ toast('Calendar error: '+e.message, true); } };
+
+$('#saveLocal').onclick=()=>{ localStorage.setItem('srq_quote_draft', JSON.stringify(buildPayload())); toast('Saved locally'); };
+
+$('#photos').addEventListener('change', e=>{ const box=$('#thumbs'); box.innerHTML=''; [...e.target.files].forEach(f=>{ const r=new FileReader(); r.onload=ev=>{ const img=new Image(); img.src=ev.target.result; img.style.width='120px'; img.style.height='90px'; img.style.objectFit='cover'; img.style.border='1px solid #e5e7eb'; img.style.borderRadius='8px'; box.appendChild(img); }; r.readAsDataURL(f); }); });
+const a=document.getElementById('annotator'); const ax=a.getContext('2d'); let ad=false; ax.lineWidth=3; ax.strokeStyle='#0f172a';
+function apos(e){const r=a.getBoundingClientRect();const x=(e.touches?e.touches[0].clientX:e.clientX)-r.left;const y=(e.touches?e.touches[0].clientY:e.clientY)-r.top;return {x,y};}
+function astart(e){ad=true;const p=apos(e);ax.beginPath();ax.moveTo(p.x,p.y);e.preventDefault();}
+function amove(e){if(!ad)return;const p=apos(e);ax.lineTo(p.x,p.y);ax.stroke();e.preventDefault();}
+function aend(){ad=false;}
+a.addEventListener('mousedown', astart); a.addEventListener('mousemove', amove); a.addEventListener('mouseup', aend); a.addEventListener('mouseleave', aend);
+a.addEventListener('touchstart', astart, {passive:false}); a.addEventListener('touchmove', amove, {passive:false}); a.addEventListener('touchend', aend);
+document.getElementById('annoClear').onclick=()=> ax.clearRect(0,0,a.width,a.height);
+document.getElementById('annoUse').onclick=()=>{ const img=new Image(); img.src=a.toDataURL(); img.style.width='120px'; img.style.height='90px'; img.style.objectFit='cover'; img.style.border='1px solid var(--g)'; img.style.borderRadius='8px'; $('#thumbs').appendChild(img); };
+
+function loadCounter(){ try { return parseInt(localStorage.getItem('srq_quote_counter')||'1000',10); } catch(e){ return 1000; } }
+function saveCounter(n){ localStorage.setItem('srq_quote_counter', String(n)); }
+function assignQuoteNo(){ let q=localStorage.getItem('srq_current_quote_no'); if(!q){ const next=loadCounter(); q=String(next); localStorage.setItem('srq_current_quote_no', q); saveCounter(next+1);} $('#quoteNo').value=q; }
+function statusKey(){ return 'srq_status_' + ($('#quoteNo').value||'temp'); }
+$('#status').addEventListener('change', ()=> localStorage.setItem(statusKey(), $('#status').value));
+function loadStatus(){ const v = localStorage.getItem(statusKey()); if(v) $('#status').value = v; }
+
+function boot(){ addLine(); addLine(); renderCatalog(); renderCrews(); renderEquip(); renderCRM(); calc(); assignQuoteNo(); loadStatus(); }
+boot();
+</script>
+</body></html>
