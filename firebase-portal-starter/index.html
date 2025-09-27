@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Scenic Roots Portal — Sign in</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Scenic Roots Portal</h1>
+      <div class="notice">Sign up a new account or sign in. Choose a role for NEW sign-ups only.</div>
+
+      <div class="card">
+        <h2>Create account</h2>
+        <label>Email</label>
+        <input id="su-email" type="email" placeholder="you@example.com" />
+        <label>Password</label>
+        <input id="su-pass" type="password" placeholder="••••••••" />
+        <label>Role <span class="tag">client</span> or <span class="tag">employee</span></label>
+        <select id="su-role">
+          <option value="client">Client</option>
+          <option value="employee">Employee</option>
+        </select>
+        <div class="row">
+          <button id="btn-signup" class="primary">Create account</button>
+        </div>
+        <div id="su-msg" class="error" style="display:none;"></div>
+      </div>
+
+      <hr />
+
+      <div class="card">
+        <h2>Sign in</h2>
+        <label>Email</label>
+        <input id="si-email" type="email" placeholder="you@example.com" />
+        <label>Password</label>
+        <input id="si-pass" type="password" placeholder="••••••••" />
+        <div class="row">
+          <button id="btn-signin" class="primary">Sign in</button>
+          <button id="btn-reset" class="ghost" title="Send password reset email">Reset password</button>
+        </div>
+        <div id="si-msg" class="error" style="display:none;"></div>
+      </div>
+
+      <p class="footer">After signing in, you'll automatically be routed to your portal.</p>
+    </div>
+
+    <script type="module">
+      import { firebaseConfig, initFirebase } from "./firebase.js";
+
+      const { 
+        auth, db, 
+        createUserWithEmailAndPassword, signInWithEmailAndPassword, sendPasswordResetEmail,
+        onAuthStateChanged, signOut, doc, setDoc, getDoc 
+      } = await initFirebase();
+
+      // --- Helpers
+      const $ = (id) => document.getElementById(id);
+      const show = (el, msg) => { el.style.display = "block"; el.textContent = msg; };
+      const hide = (el) => { el.style.display = "none"; };
+
+      async function routeByRole(uid) {
+        const ref = doc(db, "users", uid);
+        const snap = await getDoc(ref);
+        const role = snap.exists() ? snap.data().role : null;
+        if (role === "employee") {
+          window.location.href = "./employee.html";
+        } else {
+          // default to client if missing
+          window.location.href = "./client.html";
+        }
+      }
+
+      // --- Auth state listener
+      onAuthStateChanged(auth, (user) => {
+        if (user) routeByRole(user.uid);
+      });
+
+      // --- Sign up
+      $("btn-signup").addEventListener("click", async () => {
+        hide($("su-msg"));
+        const email = $("su-email").value.trim();
+        const pass  = $("su-pass").value;
+        const role  = $("su-role").value;
+        try {
+          const { user } = await createUserWithEmailAndPassword(auth, email, pass);
+          // create user doc with role
+          await setDoc(doc(db, "users", user.uid), {
+            uid: user.uid,
+            email: user.email,
+            role,
+            createdAt: new Date().toISOString(),
+          }, { merge: true });
+          await routeByRole(user.uid);
+        } catch (e) {
+          show($("su-msg"), e.message);
+        }
+      });
+
+      // --- Sign in
+      $("btn-signin").addEventListener("click", async () => {
+        hide($("si-msg"));
+        const email = $("si-email").value.trim();
+        const pass  = $("si-pass").value;
+        try {
+          await signInWithEmailAndPassword(auth, email, pass);
+          // onAuthStateChanged will route
+        } catch (e) {
+          show($("si-msg"), e.message);
+        }
+      });
+
+      // --- Reset
+      $("btn-reset").addEventListener("click", async () => {
+        hide($("si-msg"));
+        const email = $("si-email").value.trim();
+        if (!email) { show($("si-msg"), "Enter your email first."); return; }
+        try {
+          await sendPasswordResetEmail(auth, email);
+          alert("Reset email sent (if the account exists).");
+        } catch (e) {
+          show($("si-msg"), e.message);
+        }
+      });
+    </script>
+  </body>
+</html>

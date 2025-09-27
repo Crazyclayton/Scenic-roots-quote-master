@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Client Portal</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <div class="container">
+      <h1>Client Portal <span class="tag">client</span></h1>
+      <div class="notice">Welcome! This is a placeholder dashboard. Replace with quotes, invoices, requests, etc.</div>
+
+      <div class="card" id="who"></div>
+
+      <div class="row">
+        <button id="btn-home" class="ghost">Back to Sign in</button>
+        <button id="btn-logout" class="primary">Log out</button>
+      </div>
+    </div>
+
+    <script type="module">
+      import { initFirebase } from "./firebase.js";
+      const { auth, db, onAuthStateChanged, signOut, doc, getDoc } = await initFirebase();
+
+      const $ = (id) => document.getElementById(id);
+
+      async function ensureClient(user) {
+        if (!user) { window.location.href = "./index.html"; return; }
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const role = snap.exists() ? snap.data().role : null;
+        if (role !== "client") { window.location.href = "./employee.html"; return; }
+        $("who").textContent = `Signed in as ${user.email} (role: ${role})`;
+      }
+
+      onAuthStateChanged(auth, ensureClient);
+
+      $("btn-logout").addEventListener("click", async () => { await signOut(auth); window.location.href = "./index.html"; });
+      $("btn-home").addEventListener("click", () => window.location.href = "./index.html");
+    </script>
+  </body>
+</html>

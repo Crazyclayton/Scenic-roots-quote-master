@@ -1,0 +1,17 @@
+:root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; padding: 2rem; background: #f6f7fb; color: #111; }
+.container { max-width: 520px; margin: 0 auto; background: #fff; padding: 1.5rem; border-radius: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.06); }
+h1, h2 { margin: 0 0 .75rem; }
+label { display:block; margin:.5rem 0 .25rem; font-weight: 600; }
+input, select { width:100%; padding:.7rem .8rem; border:1px solid #ddd; border-radius:10px; outline: none; }
+button { appearance: none; border:0; padding:.8rem 1rem; border-radius: 10px; font-weight:700; cursor:pointer; }
+button.primary { background:#0b57d0; color:#fff; }
+button.ghost { background:#eef3ff; color:#0b57d0; }
+.row { display:flex; gap:.75rem; margin-top:.75rem; }
+.notice { background:#f2f7ff; border:1px solid #dfe9ff; color:#0b57d0; padding:.6rem .8rem; border-radius:10px; margin:.75rem 0; font-size:.95rem; }
+.error { background:#fff3f3; border:1px solid #ffd4d4; color:#b30000; padding:.6rem .8rem; border-radius:10px; margin:.75rem 0; font-size:.95rem; }
+.footer { margin-top:1rem; font-size:.9rem; color:#555; }
+hr { border:none; border-top:1px solid #eee; margin:1rem 0; }
+.tag { display:inline-block; font-size:.8rem; background:#eef3ff; color:#0b57d0; padding:.2rem .5rem; border-radius:999px; margin-left:.4rem; }
+.card { background:#fff; border:1px solid #eee; padding:1rem; border-radius:10px; }
